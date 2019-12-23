@@ -68,13 +68,13 @@ footer:
     # Hexo link (Powered by Hexo).
     enable: true
     # Version info of Hexo after Hexo link (vX.X.X).
-    version: true
+    version: false
 
   theme:
     # Theme & scheme info link (Theme - NexT.scheme).
     enable: true
     # Version info of NexT after scheme info (vX.X.X).
-    version: true
+    version: false
 
   # Beian ICP and gongan information for Chinese users. See: http://www.beian.miit.gov.cn, http://www.beian.gov.cn
   beian:
@@ -127,7 +127,7 @@ menu:
   archives: /archives/ || archive
   schedule: /schedule/ || calendar
   sitemap: /sitemap.xml || sitemap
-  commonweal: /404/ || heartbeat
+  # commonweal: /404/ || heartbeat
 
 # Enable / Disable menu icons / item badges.
 menu_settings:
@@ -181,9 +181,9 @@ site_state: true
 # Key is the link label showing to end users.
 # Value before `||` delimiter is the target permalink, value after `||` delimiter is the name of Font Awesome icon.
 social:
-  #GitHub: https://github.com/yourname || github
+  GitHub: https://github.com/xchaoinfo || github
   #E-Mail: mailto:yourname@gmail.com || envelope
-  #Weibo: https://weibo.com/yourname || weibo
+  Weibo: https://weibo.com/xchaoinfo || weibo
   #Google: https://plus.google.com/yourname || google
   #Twitter: https://twitter.com/yourname || twitter
   #FB Page: https://www.facebook.com/yourname || facebook
@@ -191,14 +191,14 @@ social:
   #YouTube: https://youtube.com/yourname || youtube
   #Instagram: https://instagram.com/yourname || instagram
   #Skype: skype:yourname?call|chat || skype
-  #RSS: /atom.xml || rss
+  # RSS: /atom.xml || rss
 
 social_icons:
   enable: true
   icons_only: false
   transition: false
 
-# Blog rolls
+# Blog rolls 推荐阅读,友情链接之类的东西
 links_settings:
   icon: link
   title: Links
@@ -262,18 +262,18 @@ symbols_count_time:
   wpm: 275
 
 # Use icon instead of the symbol # to indicate the tag at the bottom of the post
-tag_icon: false
+tag_icon: true
 
 # Reward (Donate)
 # Front-matter variable (unsupport animation).
 reward_settings:
   # If true, reward will be displayed in every article by default.
-  enable: false
-  animation: false
+  enable: true
+  # animation: true
   #comment: Donate comment here.
 
 reward:
-  #wechatpay: /images/wechatpay.png
+  wechatpay: /images/wechatpay.png
   #alipay: /images/alipay.png
   #bitcoin: /images/bitcoin.png
 
@@ -683,7 +683,7 @@ google_analytics:
   only_pageview: false
 
 # Baidu Analytics
-baidu_analytics: # <app_id>
+baidu_analytics: c77c61364fc570da10ee073c7afa8122
 
 # Growingio Analytics
 growingio_analytics: # <project_id>
