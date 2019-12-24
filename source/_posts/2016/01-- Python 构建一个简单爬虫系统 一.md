@@ -9,11 +9,10 @@ tags:
 - 爬虫
 ---
 
-
-
-# Python 构建一个简单爬虫系统 (一)
-
 本文通过 requests beautifulsoup re 等 Python的模块, 尝试构建一个微型的爬虫系统，本文采用 Python 3 的版本, 本文是第一篇介绍一个网页的简单抓取和解析
+
+<!-- more -->
+
 
 ## 目录
  - 0x00·[简介]
@@ -31,6 +30,7 @@ tags:
 
 ## 0x01 简单抓取
 抓取一个网页并且把内容保存到本地
+
 
 ```python
 import requests
