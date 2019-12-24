@@ -7,12 +7,8 @@ categories:
 tags:
 - Python
 - 爬虫
+description: "本文通过 requests beautifulsoup re 等 Python的模块, 尝试构建一个微型的爬虫系统，本文采用 Python 3 的版本, 本文是第一篇介绍一个网页的简单抓取和解析"
 ---
-
-本文通过 requests beautifulsoup re 等 Python的模块, 尝试构建一个微型的爬虫系统，本文采用 Python 3 的版本, 本文是第一篇介绍一个网页的简单抓取和解析
-
-<!-- more -->
-
 
 ## 目录
  - 0x00·[简介]
