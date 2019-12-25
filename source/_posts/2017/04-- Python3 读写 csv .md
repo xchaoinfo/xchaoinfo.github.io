@@ -13,9 +13,6 @@ description: "本文主要讨论 Python 中如何读写 csv 文件"
 ---
 
 
-
-## Python3 读写 csv
-
 #### 简介
 
 xchaoinfo 在用 Python 写爬虫的时候，百万以内的数据量，经常使用 csv 这种格式来存放数据。
