@@ -3,10 +3,11 @@ layout: post
 title: Python 构建一个简单爬虫系统 (一)
 date: 2016-09-30 17:37:28
 categories:
+- Python
 - Python爬虫
 tags:
 - Python
-- 爬虫
+- Python爬虫
 description: "本文通过 requests beautifulsoup re 等 Python的模块, 尝试构建一个微型的爬虫系统，本文采用 Python 3 的版本, 本文是第一篇介绍一个网页的简单抓取和解析"
 ---
 

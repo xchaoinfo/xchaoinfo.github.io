@@ -2,10 +2,11 @@
 title: Python 构建一个简单爬虫系统 (二)
 date: 2016-10-01 21:43:37
 categories:
+- Python
 - Python爬虫
 tags:
 - Python
-- 爬虫
+- Python爬虫
 description: "本文是用 Python 构建一个简单爬虫系统的第二篇，上一篇介绍了通过 requests 和 Beautifulsoup 来做一个网页的抓取和解析。本篇介绍通过 queue 和 threading 模块，使用队列和多线程来进行大规模数据的抓取。"
 ---
 
