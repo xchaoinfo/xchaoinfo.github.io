@@ -142,8 +142,8 @@ menu_settings:
 
 sidebar:
   # Sidebar Position.
-  # position: left
-  position: right
+  position: left
+  # position: right
 
   # Manual define the sidebar width. If commented, will be default for:
   # Muse | Mist: 320
@@ -182,8 +182,9 @@ site_state: true
 # Value before `||` delimiter is the target permalink, value after `||` delimiter is the name of Font Awesome icon.
 social:
   GitHub: https://github.com/xchaoinfo || github
-  #E-Mail: mailto:yourname@gmail.com || envelope
-  Weibo: https://weibo.com/xchaoinfo || weibo
+  E-Mail: xchaoinfo@qq.com || envelope
+  微博: https://weibo.com/xchaoinfo || weibo
+  知乎: https://zhihu.com/people/xchaoinfo || thumbs-up
   #Google: https://plus.google.com/yourname || google
   #Twitter: https://twitter.com/yourname || twitter
   #FB Page: https://www.facebook.com/yourname || facebook
@@ -747,7 +748,7 @@ algolia_search:
 # Local Search
 # Dependencies: https://github.com/theme-next/hexo-generator-searchdb
 local_search:
-  enable: false
+  enable: true
   # If auto, trigger search by changing input.
   # If manual, trigger search by pressing enter key or search button.
   trigger: auto
