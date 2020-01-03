@@ -2,9 +2,12 @@
 layout: post
 title: 'Travis-CI 自动部署 Hexo 静态博客到 Github Pages'
 categories:
-  - hello
+  - 开发部署
+  - Travis-CI
 tags:
-  - Python
+  - Travis-CI
+  - Hexo
+  - Github-Pages
 description: 'Travis-CI 自动部署 Hexo 静态博客到 Github Pages, 并且轻松的实现源代码管理'
 date: 2019-12-29 20:21:12
 ---
