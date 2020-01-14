@@ -9,7 +9,7 @@ tags:
   - Hexo
   - Github-Pages
 description: 'Travis-CI 自动部署 Hexo 静态博客到 Github Pages, 并且轻松的实现源代码管理'
-date: 2019-12-29 20:21:12
+date: 2020-01-01 20:21:12
 ---
 
 最近花了不少时间, 重新整理了几年前的基于 Hexo 构建的静态博客, 更新了 Hexo 的版本, 主题切换为配置更为方便的 Next, 并且通过 Travis-CI 来自动部署 Github Pages, 完全基于 Git 对博客的源码进行管理, 每次写好博客, 只需要 `git push`把博客的源码推送到 Github的远端仓库, Travis-CI 会自动完成部署.
