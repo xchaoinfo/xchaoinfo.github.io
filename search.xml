@@ -1,0 +1,754 @@
+<?xml version="1.0" encoding="utf-8"?>
+<search>
+  <entry>
+    <title>Travis-CI 自动部署 Hexo 静态博客到 Github Pages</title>
+    <url>/2020/01/01/01-Travis-CI-%E8%87%AA%E5%8A%A8%E9%83%A8%E7%BD%B2-Hexo-%E9%9D%99%E6%80%81%E5%8D%9A%E5%AE%A2%E5%88%B0-Github-Pages/</url>
+    <content><![CDATA[<p>最近花了不少时间, 重新整理了几年前的基于 Hexo 构建的静态博客, 更新了 Hexo 的版本, 主题切换为配置更为方便的 Next, 并且通过 Travis-CI 来自动部署 Github Pages, 完全基于 Git 对博客的源码进行管理, 每次写好博客, 只需要 <code>git push</code>把博客的源码推送到 Github的远端仓库, Travis-CI 会自动完成部署.</p>
+<p>在部署过程中发现好多网上的教程比较老了, 并且官方的文档也有些写的不够详细, 踩了一些坑, 特此记录下。</p>
+<h2 id="目录"><a href="#目录" class="headerlink" title="目录"></a>目录</h2><ul>
+<li><a href="#Github-Pages-的类型">Github Pages 的类型</a></li>
+<li><a href="#Travis-CI-简介">Travis-CI 简介</a></li>
+<li><a href="#Travis-CI-部署-Github-Pages">Travis-CI 部署 Github Pages</a></li>
+</ul>
+<h2 id="Github-Pages-的类型"><a href="#Github-Pages-的类型" class="headerlink" title="Github Pages 的类型"></a>Github Pages 的类型</h2><p>从 <a href="https://pages.github.com/" target="_blank" rel="noopener">Github Pages</a> 的官方主页可知, Github分为用户(User)和项目(Project)两个大的类型,</p>
+<ul>
+<li>用户 Github Pages 用于介绍个人或机构的相关的信息, 地址为 <code>https://&lt;username&gt;.github.io</code></li>
+<li>项目 Github Pages 用于介绍项目的情况, 地址为 <code>https://&lt;username&gt;.github.io/&lt;project-name&gt;</code></li>
+</ul>
+<h3 id="用户-Github-Pages"><a href="#用户-Github-Pages" class="headerlink" title="用户 Github Pages"></a>用户 Github Pages</h3><p>用户的 Github Pages 需要建立一个名称为 <code>&lt;username&gt;.github.io</code>的 Github repo, 并且 Github Pages 必须部署在 <code>&lt;username&gt;.github.io</code> reop 的 master 分支上.</p>
+<p><img src="/images/2020/github-pages-master.jpg" alt=" "></p>
+<h3 id="项目-Github-Pages"><a href="#项目-Github-Pages" class="headerlink" title="项目 Github Pages"></a>项目 Github Pages</h3><p>你可以为你的每个 Github repo 部署 Github Pages 用于介绍项目的具体情况, 不同于用户 Github Pages 必须部署在 master 分支, 项目的 Github Pages 的可以部署在如下位置</p>
+<ul>
+<li>master 分支</li>
+<li>master 分支 master/docs 文件下</li>
+<li>gh-pages 分支</li>
+</ul>
+<p><img src="/images/2020/github-pages-proj.jpg" alt=" "></p>
+<h2 id="Travis-CI-简介"><a href="#Travis-CI-简介" class="headerlink" title="Travis-CI 简介"></a>Travis-CI 简介</h2><p>Travis CI 是持续集成服务, 可以绑定 Github 项目,  简单来说就是你每次提交新的代码后，Travis CI 自动化完成构建测试等一系列的操作, 这样每次小的更新都经历完整的测试, 可以尽早的发现 Bug, 提高软件开发的效率.</p>
+<h2 id="Travis-CI-部署-Github-Pages"><a href="#Travis-CI-部署-Github-Pages" class="headerlink" title="Travis-CI 部署 Github Pages"></a>Travis-CI 部署 Github Pages</h2><h3 id="1-创建一个-Github-repo-并且同步代码到-github-上"><a href="#1-创建一个-Github-repo-并且同步代码到-github-上" class="headerlink" title="1. 创建一个 Github repo 并且同步代码到 github 上"></a>1. 创建一个 Github repo 并且同步代码到 github 上</h3><ol>
+<li>我们要部署 Hexo 生成的静态博客, 建议新建一个名称为 <code>&lt;username&gt;.github.io</code> 的 Github repo, 这里的 <code>&lt;username&gt;</code> 是你的 Github 用户名称, 例如我的Github用户名是 xchaoinfo , 我建立的 repo 是 <code>xchaoinfo.github.io</code>.</li>
+<li>建立一个分支用来管理博客的配置和 Markdown 文件, 例如，xchaoinfo 建立了一个名称 blog-source 的分支, 这样方便管理博客的源代码.</li>
+<li>将你的 Hexo 站点文件夹推送到 blog-source 分支中。默认情况下不应该 public 目录将不会被推送到 repository 中，你应该检查 .gitignore 文件中是否包含 public 一行，如果没有请加上。</li>
+</ol>
+<h3 id="2-设置-Travis-CI-服务"><a href="#2-设置-Travis-CI-服务" class="headerlink" title="2. 设置 Travis CI 服务"></a>2. 设置 Travis CI 服务</h3><ol>
+<li>将 <a href="https://github.com/marketplace/travis-ci" target="_blank" rel="noopener">Travis CI</a> 添加到你的 GitHub 账户中。</li>
+<li>前往 GitHub 的 <a href="https://github.com/settings/installations" target="_blank" rel="noopener">Applications settings</a>，配置 Travis CI 权限，使其能够访问你的 repository。</li>
+<li>你应该会被重定向到 Travis CI 的页面。如果没有，请 <a href="https://travis-ci.com/" target="_blank" rel="noopener">手动前往</a>。</li>
+<li>在浏览器新建一个标签页，前往 GitHub [新建 Personal Access Token] (<a href="https://github.com/settings/tokens)，只勾选" target="_blank" rel="noopener">https://github.com/settings/tokens)，只勾选</a> <code>repo</code> 的权限并生成一个新的 Token。Token 生成后请复制并保存好。</li>
+<li>回到 Travis CI，前往你的 repository 的设置页面，在 Environment Variables 下新建一个环境变量，Name 为 <code>GH_TOKEN，Value</code> 为刚才你在 GitHub 生成的 Token。确保 <code>DISPLAY VALUE IN BUILD LOG</code> 保持 不被勾选 避免你的 Token 泄漏。点击 Add 保存。</li>
+</ol>
+<h3 id="3-编辑-Travis-CI-部署文件"><a href="#3-编辑-Travis-CI-部署文件" class="headerlink" title="3. 编辑 Travis CI 部署文件"></a>3. 编辑 Travis CI 部署文件</h3><p>在你的 Hexo 站点文件夹中新建一个 <code>.travis.yml</code> 文件：</p>
+<figure class="highlight yml"><table><tr><td class="code"><pre><span class="line"><span class="attr">sudo:</span> <span class="literal">false</span></span><br><span class="line"><span class="attr">language:</span> <span class="string">node_js</span></span><br><span class="line"><span class="attr">node_js:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="number">10</span> <span class="comment"># use nodejs v10 LTS</span></span><br><span class="line"><span class="attr">cache:</span> <span class="string">npm</span></span><br><span class="line"><span class="attr">branches:</span></span><br><span class="line">  <span class="attr">only:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="string">blog-source</span> <span class="comment"># 仅从 blog-source 分支构建</span></span><br><span class="line"><span class="attr">script:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="string">hexo</span> <span class="string">generate</span> <span class="comment"># 通过 hexo generate 生成静态文件 static files</span></span><br><span class="line"><span class="attr">deploy:</span></span><br><span class="line">  <span class="attr">provider:</span> <span class="string">pages</span></span><br><span class="line">  <span class="attr">skip-cleanup:</span> <span class="literal">true</span></span><br><span class="line">  <span class="attr">github-token:</span> <span class="string">$GH_TOKEN</span></span><br><span class="line">  <span class="attr">keep-history:</span> <span class="literal">true</span></span><br><span class="line">  <span class="attr">committer_from_gh:</span> <span class="literal">true</span></span><br><span class="line">  <span class="attr">target_branch:</span> <span class="string">master</span>  <span class="comment"># 部署到 master 分支</span></span><br><span class="line">  <span class="attr">on:</span></span><br><span class="line">    <span class="attr">branch:</span> <span class="string">blog-source</span></span><br><span class="line">  <span class="attr">local-dir:</span> <span class="string">public</span></span><br></pre></td></tr></table></figure>
+<p>将 .travis.yml 推送到 blog-source 分支中。</p>
+<p>Travis CI 应该会自动开始运行，并将生成的文件推送到同一 repository 下的 master 分支下，前往 <code>https://&lt;username&gt;.github.io</code> 查看你的站点是否可以访问。这可能需要一些时间。</p>
+]]></content>
+      <categories>
+        <category>开发部署</category>
+        <category>Travis-CI</category>
+      </categories>
+      <tags>
+        <tag>Travis-CI</tag>
+        <tag>Hexo</tag>
+        <tag>Github-Pages</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>再谈 Jupyter Notebook 的使用</title>
+    <url>/2020/01/09/jupyter/</url>
+    <content><![CDATA[<p>从事数据分析的工作，Jupyter Notebook 一直是我的工作中的趁手工具, 但是使用过程也有些不如意之处，</p>
+<p>欣喜之处颇多, 不如意之处亦有, 故此分享一些新的体会<br>最近在用Python做一些数据分析和科学计算相关的内容，对于Jupyter Notebook 的使用，有些心得，分享给诸位。</p>
+<p>多参考其他人的文章，然后参考官方文档，希望可以写的非常详细的一篇教程</p>
+<h3 id="安装与配置"><a href="#安装与配置" class="headerlink" title="安装与配置"></a>安装与配置</h3><h3 id="基本概念介绍"><a href="#基本概念介绍" class="headerlink" title="基本概念介绍"></a>基本概念介绍</h3><h3 id="Ipython介绍"><a href="#Ipython介绍" class="headerlink" title="Ipython介绍"></a>Ipython介绍</h3><h3 id="快捷键"><a href="#快捷键" class="headerlink" title="快捷键"></a>快捷键</h3><h3 id="Jupyter-Lab"><a href="#Jupyter-Lab" class="headerlink" title="Jupyter Lab"></a>Jupyter Lab</h3><h3 id="周边工具"><a href="#周边工具" class="headerlink" title="周边工具"></a>周边工具</h3><p>数据分析由于需要用到与科学计算相关的包，而且这些包依赖于C/C++ 的扩展，所以比较常用的 conda 的 Python 的发行包<br>完整版的 anaconda 一般是包含了 Jupyter 的</p>
+<p>安装与配置的过程中，需要注意以下几点</p>
+<ol>
+<li><p>使用pip或者conda一种包管理工具来安装Jupyter，由于Jupyter 依赖大量的第三方包，混合pip和conda来管理依赖会导致Jupyter出问题。</p>
+</li>
+<li><p>用jupyterthemes配置下适合自己风格的主题。</p>
+</li>
+</ol>
+<p>jupyterlab</p>
+<ol start="3">
+<li>由于随着版本的变化，Python第三方包的安装方式可能会有所变化，所以，最好方式是，参考官方文档安装。</li>
+</ol>
+<p>Jupyter Notebook 的使用</p>
+<p>首先，Jupyter Notebook 是由一个Cell（单元）构成的，一共有三种类型的Cell。</p>
+<p>code，交互式代码运行环境，对Python来说，这里就是ipython</p>
+<p>Markdown，这里的Markdown是带有latex公式输入的增强版的Markdown.</p>
+<p>raw text, 纯文本，主要是方便处理大段的文字，避免对特殊字符的转义。</p>
+<p>因此，想要舒适快捷的使用Jupyter Notebook, 你至少应该熟悉Ipython + Markdown + Latex公式。Ipython中能够提高生产效率的工具，主要是魔法（Macros）命令和代码自动补全和提示。Markdown和Latex公式，只需要记住语法规则和常用的特殊字符的含义。</p>
+<p>其次，需要理解的是Jupyter Notebook 有编辑和命令两种模式，如果使用过Vim,对这种设计一定不会陌生，这对于提供开发效率非常重要。当进入命令模式后，可以对Cell进行增删改等许多操作，具体的可以在命令模式输入H查看快捷键的说明。例如，可以通过快捷键，在命令和编辑两种模式下快速的切换，在三种Cell 中切换。</p>
+<p>以下是一些常用的快捷键</p>
+<p>Esc or Ctrl+M 退出编辑模式，进入命令模式</p>
+<p>Enter 进入编辑模式</p>
+<p>Shift+Enter 运行 Cell 并且进入下一个 Cell</p>
+<p>Ctrl+Enter 运行 Cell</p>
+<p>P 进入命令搜索模式(支持模糊匹配, sublime text 也有类似的设计)</p>
+<p>H 进入帮助，不用担心记不住如此多的快捷键。</p>
+<p>Y (code), M(markdown),R(raw) 三种 cell 切换</p>
+<p>以上内容，能够让你快速高效的使用Jupyter Notebook</p>
+]]></content>
+      <categories>
+        <category>开发工具</category>
+        <category>Jupyter</category>
+      </categories>
+      <tags>
+        <tag>Jupyter Notebook</tag>
+        <tag>Ipython</tag>
+        <tag>开发工具</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Emmet 让你的HTML飞起来--前端利器</title>
+    <url>/2020/01/09/04-Emmet-%E8%AE%A9%E4%BD%A0%E7%9A%84HTML%E9%A3%9E%E8%B5%B7%E6%9D%A5-%E5%89%8D%E7%AB%AF%E5%88%A9%E5%99%A8/</url>
+    <content><![CDATA[]]></content>
+      <categories>
+        <category>hello</category>
+      </categories>
+      <tags>
+        <tag>Python</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>django-学习记录</title>
+    <url>/2020/03/12/django-%E5%AD%A6%E4%B9%A0%E8%AE%B0%E5%BD%95/</url>
+    <content><![CDATA[]]></content>
+      <categories>
+        <category>hello</category>
+      </categories>
+      <tags>
+        <tag>Python</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>MySQL 学习笔记</title>
+    <url>/2020/03/13/mysql-study/</url>
+    <content><![CDATA[<p>环境: centos 7.6 , MySQL 5.7 腾讯云的 VPS</p>
+<h2 id="MySQL-的安装与配置"><a href="#MySQL-的安装与配置" class="headerlink" title="MySQL 的安装与配置"></a>MySQL 的安装与配置</h2><h3 id="1-下载安装-Mysql-5-7"><a href="#1-下载安装-Mysql-5-7" class="headerlink" title="1. 下载安装 Mysql 5.7"></a>1. 下载安装 Mysql 5.7</h3><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 配置镜像源</span></span><br><span class="line">wget -i -c http://dev.mysql.com/get/mysql57-community-release-el7-10.noarch.rpm</span><br><span class="line">rpm -ivh mysql57-community-release-el7-10.noarch.rpm</span><br><span class="line"><span class="meta">#</span><span class="bash"> yum 安装</span></span><br><span class="line">yum install -y  mysql-community-server</span><br></pre></td></tr></table></figure>
+
+<h3 id="启动"><a href="#启动" class="headerlink" title="启动"></a>启动</h3><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">service mysqld start</span><br><span class="line">systemctl start mysqld.service</span><br></pre></td></tr></table></figure>
+
+
+<h3 id="2-常见问题"><a href="#2-常见问题" class="headerlink" title="2. 常见问题"></a>2. 常见问题</h3><ol>
+<li>use mysql 报错<br>主要是因为开启了用户验证, 但是没有很好的设置账号和密码, 解决方式<br>首先, <code>service mysqld stop</code> 关闭 mysqld 服务<br>然后, <code>mysqld --user=root  --skip-grant-tables</code><br>其中, –user=root 为了解决 MySQL 在 root 用户下启动的安全问题</li>
+<li>Mysql出现Table ‘performance_schema.session_status’ doesn’t exist 解决办法</li>
+</ol>
+<p>更新mysql  <code>mysql_upgrade -u root -p</code><br>重启mysql <code>service mysql restart</code></p>
+<ol start="3">
+<li>localhost 登录失败, 可以使用 <code>mysql -uroot -h127.0.0.1 -p</code> 登录<br>权限配置问题</li>
+</ol>
+<h3 id="配置"><a href="#配置" class="headerlink" title="配置"></a>配置</h3><h2 id="基本使用"><a href="#基本使用" class="headerlink" title="基本使用"></a>基本使用</h2><figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">DATABASE</span> hello <span class="built_in">CHARACTER</span> <span class="keyword">SET</span> utf8;</span><br><span class="line"></span><br><span class="line"><span class="keyword">CREATE</span> <span class="keyword">table</span> <span class="keyword">if</span> <span class="keyword">not</span> <span class="keyword">exists</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">SELECT</span> ListA <span class="keyword">from</span> xxxx;</span><br><span class="line"><span class="keyword">SELECT</span> * <span class="keyword">from</span> xxxx;</span><br><span class="line"><span class="keyword">select</span> listA, listb <span class="keyword">from</span> xxxx;</span><br><span class="line"></span><br><span class="line"><span class="comment">-- 去掉重复的值</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">select</span> <span class="keyword">distinct</span> ListA <span class="keyword">From</span> xxxx;</span><br><span class="line"></span><br><span class="line"><span class="comment">-- 倒序排列</span></span><br><span class="line"><span class="keyword">select</span> * <span class="keyword">from</span> xxx <span class="keyword">order</span> <span class="keyword">by</span> listA <span class="keyword">desc</span>;</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="进阶使用"><a href="#进阶使用" class="headerlink" title="进阶使用"></a>进阶使用</h2><h2 id="集群运维"><a href="#集群运维" class="headerlink" title="集群运维"></a>集群运维</h2><p>docker k8s</p>
+]]></content>
+      <categories>
+        <category>MySQL</category>
+      </categories>
+      <tags>
+        <tag>SQL</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>如何面对技术焦虑</title>
+    <url>/2020/12/03/%E5%A6%82%E4%BD%95%E9%9D%A2%E5%AF%B9%E6%8A%80%E6%9C%AF%E7%84%A6%E8%99%91/</url>
+    <content><![CDATA[]]></content>
+      <categories>
+        <category>思考</category>
+      </categories>
+      <tags>
+        <tag>编程</tag>
+        <tag>学习</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Learn Git The Hard Way</title>
+    <url>/2020/01/09/git-notes/</url>
+    <content><![CDATA[<h2 id="内容提要"><a href="#内容提要" class="headerlink" title="内容提要"></a>内容提要</h2><ol>
+<li><p><a href="#安装与配置">安装与配置</a><br> 1.1 <a href="#Git-安装">Git 安装</a><br> 1.2 <a href="#Git-配置">Git 配置</a></p>
+</li>
+<li><p>[基本概念与设计思路]</p>
+</li>
+<li><p>[开始使用]</p>
+</li>
+<li><p>[强大的分支]</p>
+</li>
+<li><p>[远端仓库]</p>
+</li>
+<li><p>[Github 协作流程]</p>
+</li>
+<li><p>[实践指南]</p>
+</li>
+</ol>
+<h2 id="基本概念与设计思路"><a href="#基本概念与设计思路" class="headerlink" title="基本概念与设计思路"></a>基本概念与设计思路</h2><p>主要讨论 Git 的一些基本概念，同时讨论 Git 的一些设计思路，这对于更好的使用 Git 至关重要</p>
+<h3 id="Git-是什么"><a href="#Git-是什么" class="headerlink" title="Git 是什么?"></a>Git 是什么?</h3><p>Git 更像是一个小型的文件系统, 提供了许多以此为基础构建的工具, 而不仅只是一个版本控制工具</p>
+<h3 id="Git-版本控制中的文件状态"><a href="#Git-版本控制中的文件状态" class="headerlink" title="Git 版本控制中的文件状态"></a>Git 版本控制中的文件状态</h3><p>git 系统中可以分为 已追踪(traced)和没有追踪(untraced)两类<br>其中, 已经 traced 的文件,<br>modified  已修改<br>staged    已暂存的状态, 等待提交<br>committed 提交的状态</p>
+<h2 id="开始使用"><a href="#开始使用" class="headerlink" title="开始使用"></a>开始使用</h2><h3 id="创建一个-Git-项目"><a href="#创建一个-Git-项目" class="headerlink" title="创建一个 Git 项目"></a>创建一个 Git 项目</h3><p>想要创建一个 Git 项目非常简单，你可以使用 <code>git init</code> 快速的初始化一个项目</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">mkdir git-demo</span><br><span class="line">git init</span><br></pre></td></tr></table></figure>
+<p>当然更加常用的是 <code>git clone</code> 从远端仓库直接 clone 一个项目</p>
+<p><code>git add .</code> 所有文件添加到暂缓区<br><code>git add -u</code> 所有修改的文件添加到暂缓区</p>
+<h3 id="查看项目的状态"><a href="#查看项目的状态" class="headerlink" title="查看项目的状态"></a>查看项目的状态</h3><p>git status</p>
+<h3 id="提交快照"><a href="#提交快照" class="headerlink" title="提交快照"></a>提交快照</h3><p>git commit -m “快速的提交”<br>git commit 打开你的编辑器提交</p>
+<p>git log </p>
+<p>git add 添加 untracked 的文件<br>git add 理解为添加内容到下一次提交中, 而不是添加文件到项目中, 更为合适。</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">git status </span><br><span class="line">git status -s 简单的信息</span><br></pre></td></tr></table></figure>
+<h4 id="对比修改的状态"><a href="#对比修改的状态" class="headerlink" title="对比修改的状态"></a>对比修改的状态</h4><p>git diff 对应 modified<br>git diff –cached /–staged 对应文件状态 staged 查看修改的内容</p>
+<h2 id="3-git-基本操作"><a href="#3-git-基本操作" class="headerlink" title="3. git 基本操作"></a>3. git 基本操作</h2><h3 id="初始化项目"><a href="#初始化项目" class="headerlink" title="初始化项目"></a>初始化项目</h3><p>本地<br>mkdir awesome-project<br>cd awesome-project<br>git init<br>git add .<br>git commit -m “初始化项目”</p>
+<p>远端<br>git clone git/https 地址</p>
+<p>git add filename 支持Liux 通配符 . * 等<br>git commit -m “本次提交的简要信息”<br>git commit -a -m 相当于 git add and git commit</p>
+<h2 id="5-git-与远程服务通信"><a href="#5-git-与远程服务通信" class="headerlink" title="5. git 与远程服务通信"></a>5. git 与远程服务通信</h2><h3 id="git-clone"><a href="#git-clone" class="headerlink" title="git clone"></a>git clone</h3><h3 id="git-fetch"><a href="#git-fetch" class="headerlink" title="git fetch"></a>git fetch</h3><h3 id="git-push"><a href="#git-push" class="headerlink" title="git push"></a>git push</h3><h2 id="6-git-高阶操作"><a href="#6-git-高阶操作" class="headerlink" title="6. git 高阶操作"></a>6. git 高阶操作</h2><h2 id="fork-分支如果与主分支保持同步"><a href="#fork-分支如果与主分支保持同步" class="headerlink" title="fork 分支如果与主分支保持同步"></a>fork 分支如果与主分支保持同步</h2><ol>
+<li>Github 上操作</li>
+<li>本地 git 操作</li>
+</ol>
+<h2 id="实践指南"><a href="#实践指南" class="headerlink" title="实践指南"></a>实践指南</h2><h3 id="日常使用-Git-整理"><a href="#日常使用-Git-整理" class="headerlink" title="日常使用 Git 整理"></a>日常使用 Git 整理</h3><p>整理最常使用的 Git 命令以及它们的应用场景</p>
+<h2 id="DESCRIPTION"><a href="#DESCRIPTION" class="headerlink" title="DESCRIPTION"></a>DESCRIPTION</h2><p>Git users can broadly be grouped into four categories for the purposes of describing here a small set of useful command for everyday Git.</p>
+<p>Individual Developer (Standalone) commands are essential for anybody who makes a commit, even for somebody who works alone.</p>
+<p>If you work with other people, you will need commands listed in the Individual Developer (Participant) section as well.</p>
+<p>People who play the Integrator role need to learn some more commands in addition to the above.</p>
+<p>Repository Administration commands are for system administrators who are responsible for the care and feeding of Git repositories.</p>
+<h2 id="Individual-Developer-Standalone"><a href="#Individual-Developer-Standalone" class="headerlink" title="Individual Developer (Standalone)"></a>Individual Developer (Standalone)</h2><p>A standalone individual developer does not exchange patches with other people, and works alone in a single repository, using the following commands.</p>
+<p>git-init[1] to create a new repository.</p>
+<p>git-log[1] to see what happened.</p>
+<p>git-checkout[1] and git-branch[1] to switch branches.</p>
+<p>git-add[1] to manage the index file.</p>
+<p>git-diff[1] and git-status[1] to see what you are in the middle of doing.</p>
+<p>git-commit[1] to advance the current branch.</p>
+<p>git-reset[1] and git-checkout[1] (with pathname parameters) to undo changes.</p>
+<p>git-merge[1] to merge between local branches.</p>
+<p>git-rebase[1] to maintain topic branches.</p>
+<p>git-tag[1] to mark a known point.</p>
+<h2 id="Ex01-引入源码开始一个-Git-项目"><a href="#Ex01-引入源码开始一个-Git-项目" class="headerlink" title="Ex01 引入源码开始一个 Git 项目"></a>Ex01 引入源码开始一个 Git 项目</h2><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">tar zxf frotz.tar.gz</span><br><span class="line"><span class="built_in">cd</span> frotz </span><br><span class="line">git init</span><br><span class="line">git add . <span class="comment"># 添加当前项目中的一切到 Git 管理中</span></span><br><span class="line">git commit -m <span class="string">"import of frotz source tree."</span></span><br><span class="line">git tag v2.43  <span class="comment"># 添加一个标签</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="Ex02-创建一个新的相关分支并进行开发"><a href="#Ex02-创建一个新的相关分支并进行开发" class="headerlink" title="Ex02 创建一个新的相关分支并进行开发"></a>Ex02 创建一个新的相关分支并进行开发</h2><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git checkout -b alsa-audio (1)</span><br><span class="line">edit/compile/<span class="built_in">test</span></span><br><span class="line">git checkout -- curses/ux_audio_oss.c (2)</span><br><span class="line">git add curses/ux_audio_alsa.c (3)</span><br><span class="line">edit/compile/<span class="built_in">test</span></span><br><span class="line">git diff HEAD (4)</span><br><span class="line">git commit -a -s (5)</span><br><span class="line">edit/compile/<span class="built_in">test</span></span><br><span class="line">git diff HEAD^ (6)</span><br><span class="line">git commit -a --amend (7)</span><br><span class="line">git checkout master (8)</span><br><span class="line">git merge alsa-audio (9)</span><br><span class="line">git <span class="built_in">log</span> --since=<span class="string">'3 days ago'</span> (10)</span><br><span class="line">git <span class="built_in">log</span> v2.43.. curses/ (11)</span><br></pre></td></tr></table></figure>
+<p>create a new topic branch.</p>
+<p>revert your botched changes in curses/ux_audio_oss.c.</p>
+<p>you need to tell Git if you added a new file; removal and modification will be caught if you do git commit -a later.</p>
+<p>to see what changes you are committing.</p>
+<p>commit everything, as you have tested, with your sign-off.</p>
+<p>look at all your changes including the previous commit.</p>
+<p>amend the previous commit, adding all your new changes, using your original message.</p>
+<p>switch to the master branch.</p>
+<p>merge a topic branch into your master branch.</p>
+<p>review commit logs; other forms to limit output can be combined and include -10 (to show up to 10 commits), –until=2005-12-10, etc.</p>
+<p>view only the changes that touch what’s in curses/ directory, since v2.43 tag.</p>
+<h2 id="Individual-Developer-Participant"><a href="#Individual-Developer-Participant" class="headerlink" title="Individual Developer (Participant)"></a>Individual Developer (Participant)</h2><p>A developer working as a participant in a group project needs to learn how to communicate with others, and uses these commands in addition to the ones needed by a standalone developer.</p>
+<p>git-clone[1] from the upstream to prime your local repository.</p>
+<p>git-pull[1] and git-fetch[1] from “origin” to keep up-to-date with the upstream.</p>
+<p>git-push[1] to shared repository, if you adopt CVS style shared repository workflow.</p>
+<p>git-format-patch[1] to prepare e-mail submission, if you adopt Linux kernel-style public forum workflow.</p>
+<p>git-send-email[1] to send your e-mail submission without corruption by your MUA.</p>
+<p>git-request-pull[1] to create a summary of changes for your upstream to pull.</p>
+<p>Examples<br>Clone the upstream and work on it. Feed changes to upstream.<br>$ git clone git://git.kernel.org/pub/scm/…/torvalds/linux-2.6 my2.6<br>$ cd my2.6<br>$ git checkout -b mine master (1)<br>$ edit/compile/test; git commit -a -s (2)<br>$ git format-patch master (3)<br>$ git send-email –to=”person <a href="mailto:&#x65;&#109;&#97;&#105;&#x6c;&#64;&#x65;&#120;&#97;&#109;&#112;&#108;&#x65;&#46;&#x63;&#x6f;&#x6d;">&#x65;&#109;&#97;&#105;&#x6c;&#64;&#x65;&#120;&#97;&#109;&#112;&#108;&#x65;&#46;&#x63;&#x6f;&#x6d;</a>“ 00*.patch (4)<br>$ git checkout master (5)<br>$ git pull (6)<br>$ git log -p ORIG_HEAD.. arch/i386 include/asm-i386 (7)<br>$ git ls-remote –heads <a href="http://git.kernel.org/.../jgarzik/libata-dev.git" target="_blank" rel="noopener">http://git.kernel.org/.../jgarzik/libata-dev.git</a> (8)<br>$ git pull git://git.kernel.org/pub/…/jgarzik/libata-dev.git ALL (9)<br>$ git reset –hard ORIG_HEAD (10)<br>$ git gc (11)<br>(1) checkout a new branch mine from master.</p>
+<p>(2) repeat as needed.</p>
+<p>(3) extract patches from your branch, relative to master,</p>
+<p>(4) and email them.</p>
+<p>(5) return to master, ready to see what’s new</p>
+<p>(6) git pull fetches from origin by default and merges into the current branch.</p>
+<p>(7) immediately after pulling, look at the changes done upstream since last time we checked, only in the area we are interested in.</p>
+<p>(8) check the branch names in an external repository (if not known).</p>
+<p>(9) fetch from a specific branch ALL from a specific repository and merge it.</p>
+<p>(10) revert the pull.</p>
+<p>garbage collect leftover objects from reverted pull.</p>
+<p>Push into another repository.<br>satellite$ git clone mothership:frotz frotz (1)<br>satellite$ cd frotz<br>satellite$ git config –get-regexp ‘^(remote|branch).‘ (2)<br>remote.origin.url mothership:frotz<br>remote.origin.fetch refs/heads/<em>:refs/remotes/origin/</em><br>branch.master.remote origin<br>branch.master.merge refs/heads/master<br>satellite$ git config remote.origin.push <br>       +refs/heads/<em>:refs/remotes/satellite/</em> (3)<br>satellite$ edit/compile/test/commit<br>satellite$ git push origin (4)</p>
+<p>mothership$ cd frotz<br>mothership$ git checkout master<br>mothership$ git merge satellite/master (5)<br>mothership machine has a frotz repository under your home directory; clone from it to start a repository on the satellite machine.</p>
+<p>clone sets these configuration variables by default. It arranges git pull to fetch and store the branches of mothership machine to local remotes/origin/* remote-tracking branches.</p>
+<p>arrange git push to push all local branches to their corresponding branch of the mothership machine.</p>
+<p>push will stash all our work away on remotes/satellite/* remote-tracking branches on the mothership machine. You could use this as a back-up method. Likewise, you can pretend that mothership “fetched” from you (useful when access is one sided).</p>
+<p>on mothership machine, merge the work done on the satellite machine into the master branch.</p>
+<p>Branch off of a specific tag.<br>$ git checkout -b private2.6.14 v2.6.14 (1)<br>$ edit/compile/test; git commit -a<br>$ git checkout master<br>$ git cherry-pick v2.6.14..private2.6.14 (2)<br>create a private branch based on a well known (but somewhat behind) tag.</p>
+<p>forward port all changes in private2.6.14 branch to master branch without a formal “merging”. Or longhand<br>git format-patch -k -m –stdout v2.6.14..private2.6.14 | git am -3 -k</p>
+<p>An alternate participant submission mechanism is using the git request-pull or pull-request mechanisms (e.g as used on GitHub (<a href="http://www.github.com" target="_blank" rel="noopener">www.github.com</a>) to notify your upstream of your contribution.</p>
+<h2 id="Integrator"><a href="#Integrator" class="headerlink" title="Integrator"></a>Integrator</h2><p>A fairly central person acting as the integrator in a group project receives changes made by others, reviews and integrates them and publishes the result for others to use, using these commands in addition to the ones needed by participants.</p>
+<p>This section can also be used by those who respond to git request-pull or pull-request on GitHub (<a href="http://www.github.com" target="_blank" rel="noopener">www.github.com</a>) to integrate the work of others into their history. A sub-area lieutenant for a repository will act both as a participant and as an integrator.</p>
+<p>git-am[1] to apply patches e-mailed in from your contributors.</p>
+<p>git-pull[1] to merge from your trusted lieutenants.</p>
+<p>git-format-patch[1] to prepare and send suggested alternative to contributors.</p>
+<p>git-revert[1] to undo botched commits.</p>
+<p>git-push[1] to publish the bleeding edge.</p>
+<p>Examples<br>A typical integrator’s Git day.<br>$ git status (1)<br>$ git branch –no-merged master (2)<br>$ mailx (3)<br>&amp; s 2 3 4 5 ./+to-apply<br>&amp; s 7 8 ./+hold-linus<br>&amp; q<br>$ git checkout -b topic/one master<br>$ git am -3 -i -s ./+to-apply (4)<br>$ compile/test<br>$ git checkout -b hold/linus &amp;&amp; git am -3 -i -s ./+hold-linus (5)<br>$ git checkout topic/one &amp;&amp; git rebase master (6)<br>$ git checkout pu &amp;&amp; git reset –hard next (7)<br>$ git merge topic/one topic/two &amp;&amp; git merge hold/linus (8)<br>$ git checkout maint<br>$ git cherry-pick master~4 (9)<br>$ compile/test<br>$ git tag -s -m “GIT 0.99.9x” v0.99.9x (10)<br>$ git fetch ko &amp;&amp; for branch in master maint next pu (11)<br>    do<br>    git show-branch ko/$branch $branch (12)<br>    done<br>$ git push –follow-tags ko (13)<br>see what you were in the middle of doing, if anything.</p>
+<p>see which branches haven’t been merged into master yet. Likewise for any other integration branches e.g. maint, next and pu (potential updates).</p>
+<p>read mails, save ones that are applicable, and save others that are not quite ready (other mail readers are available).</p>
+<p>apply them, interactively, with your sign-offs.</p>
+<p>create topic branch as needed and apply, again with sign-offs.</p>
+<p>rebase internal topic branch that has not been merged to the master or exposed as a part of a stable branch.</p>
+<p>restart pu every time from the next.</p>
+<p>and bundle topic branches still cooking.</p>
+<p>backport a critical fix.</p>
+<p>create a signed tag.</p>
+<p>make sure master was not accidentally rewound beyond that already pushed out.</p>
+<p>In the output from git show-branch, master should have everything ko/master has, and next should have everything ko/next has, etc.</p>
+<p>push out the bleeding edge, together with new tags that point into the pushed history.</p>
+<p>In this example, the ko shorthand points at the Git maintainer’s repository at kernel.org, and looks like this:</p>
+<p>(in .git/config)<br>[remote “ko”]<br>    url = kernel.org:/pub/scm/git/git.git<br>    fetch = refs/heads/<em>:refs/remotes/ko/</em><br>    push = refs/heads/master<br>    push = refs/heads/next<br>    push = +refs/heads/pu<br>    push = refs/heads/maint</p>
+<h2 id="Repository-Administration"><a href="#Repository-Administration" class="headerlink" title="Repository Administration"></a>Repository Administration</h2><p>A repository administrator uses the following tools to set up and maintain access to the repository by developers.</p>
+<p>git-daemon[1] to allow anonymous download from repository.</p>
+<p>git-shell[1] can be used as a restricted login shell for shared central repository users.</p>
+<p>git-http-backend[1] provides a server side implementation of Git-over-HTTP (“Smart http”) allowing both fetch and push services.</p>
+<p>gitweb[1] provides a web front-end to Git repositories, which can be set-up using the git-instaweb[1] script.</p>
+<p>update hook howto has a good example of managing a shared central repository.</p>
+<p>In addition there are a number of other widely deployed hosting, browsing and reviewing solutions such as:</p>
+<p>gitolite, gerrit code review, cgit and others.</p>
+<p>Examples<br>We assume the following in /etc/services<br>$ grep 9418 /etc/services<br>git     9418/tcp        # Git Version Control System<br>Run git-daemon to serve /pub/scm from inetd.<br>$ grep git /etc/inetd.conf<br>git stream  tcp nowait  nobody <br>  /usr/bin/git-daemon git-daemon –inetd –export-all /pub/scm<br>The actual configuration line should be on one line.</p>
+<p>Run git-daemon to serve /pub/scm from xinetd.<br>$ cat /etc/xinetd.d/git-daemon</p>
+<h1 id="default-off"><a href="#default-off" class="headerlink" title="default: off"></a>default: off</h1><h1 id="description-The-Git-server-offers-access-to-Git-repositories"><a href="#description-The-Git-server-offers-access-to-Git-repositories" class="headerlink" title="description: The Git server offers access to Git repositories"></a>description: The Git server offers access to Git repositories</h1><p>service git<br>{<br>    disable = no<br>    type            = UNLISTED<br>    port            = 9418<br>    socket_type     = stream<br>    wait            = no<br>    user            = nobody<br>    server          = /usr/bin/git-daemon<br>    server_args     = –inetd –export-all –base-path=/pub/scm<br>    log_on_failure  += USERID<br>}<br>Check your xinetd(8) documentation and setup, this is from a Fedora system. Others might be different.</p>
+<p>Give push/pull only access to developers using git-over-ssh.<br>e.g. those using: $ git push/pull ssh://host.xz/pub/scm/project</p>
+<p>$ grep git /etc/passwd (1)<br>alice:x:1000:1000::/home/alice:/usr/bin/git-shell<br>bob:x:1001:1001::/home/bob:/usr/bin/git-shell<br>cindy:x:1002:1002::/home/cindy:/usr/bin/git-shell<br>david:x:1003:1003::/home/david:/usr/bin/git-shell<br>$ grep git /etc/shells (2)<br>/usr/bin/git-shell<br>log-in shell is set to /usr/bin/git-shell, which does not allow anything but git push and git pull. The users require ssh access to the machine.</p>
+<p>in many distributions /etc/shells needs to list what is used as the login shell.</p>
+<p>CVS-style shared repository.<br>$ grep git /etc/group (1)<br>git:x:9418:alice,bob,cindy,david<br>$ cd /home/devo.git<br>$ ls -l (2)<br>  lrwxrwxrwx   1 david git    17 Dec  4 22:40 HEAD -&gt; refs/heads/master<br>  drwxrwsr-x   2 david git  4096 Dec  4 22:40 branches<br>  -rw-rw-r–   1 david git    84 Dec  4 22:40 config<br>  -rw-rw-r–   1 david git    58 Dec  4 22:40 description<br>  drwxrwsr-x   2 david git  4096 Dec  4 22:40 hooks<br>  -rw-rw-r–   1 david git 37504 Dec  4 22:40 index<br>  drwxrwsr-x   2 david git  4096 Dec  4 22:40 info<br>  drwxrwsr-x   4 david git  4096 Dec  4 22:40 objects<br>  drwxrwsr-x   4 david git  4096 Nov  7 14:58 refs<br>  drwxrwsr-x   2 david git  4096 Dec  4 22:40 remotes<br>$ ls -l hooks/update (3)<br>  -r-xr-xr-x   1 david git  3536 Dec  4 22:40 update<br>$ cat info/allowed-users (4)<br>refs/heads/master   alice|cindy<br>refs/heads/doc-update   bob<br>refs/tags/v[0-9]*   david<br>place the developers into the same git group.</p>
+<p>and make the shared repository writable by the group.</p>
+<p>use update-hook example by Carl from Documentation/howto/ for branch policy control.</p>
+<p>alice and cindy can push into master, only bob can push into doc-update. david is the release manager and is the only person who can create and push version tags.</p>
+<p>写作原则，在原来已有文章的基础上，写的更详细</p>
+<p>配置与帮助<br>git config<br>git help</p>
+<p>获取与创建项目<br>git init<br>git clone</p>
+<p>快照基础<br>git add<br>git status<br>git diff<br>git difftool<br>git commit</p>
+<p>git reset<br>git rm<br>git mv<br>git clean</p>
+<p>git branch<br>git log<br>git checkout<br>git merge<br>git stash<br>git tag</p>
+<p>git remote<br>git pull<br>git push<br>git fetch</p>
+<ol>
+<li><p><a href="#1-基本概念">基本概念</a></p>
+</li>
+<li><p><a href="#2-Git-配置">git 配置</a></p>
+</li>
+<li><p>git 基础</p>
+<ul>
+<li>本地仓库/远程仓库</li>
+<li>git log</li>
+<li>tag 标签</li>
+</ul>
+</li>
+<li><p>git branch 分支操作</p>
+</li>
+<li><p>Github开源贡献流程</p>
+</li>
+<li><p>git examples</p>
+</li>
+<li><p>github 开发流程</p>
+</li>
+<li><p>git 与远程服务通信<br> git clone<br> git fetch<br> git push</p>
+</li>
+<li><p>git 高阶操作</p>
+</li>
+</ol>
+]]></content>
+      <categories>
+        <category>开发工具</category>
+        <category>Git</category>
+      </categories>
+      <tags>
+        <tag>Git</tag>
+        <tag>Github</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Python 构建一个简单爬虫系统 (一)</title>
+    <url>/2016/09/30/2016/01--%20Python%20%E6%9E%84%E5%BB%BA%E4%B8%80%E4%B8%AA%E7%AE%80%E5%8D%95%E7%88%AC%E8%99%AB%E7%B3%BB%E7%BB%9F%20%E4%B8%80/</url>
+    <content><![CDATA[<h2 id="目录"><a href="#目录" class="headerlink" title="目录"></a>目录</h2><ul>
+<li>0x00·[简介]</li>
+<li>0x01·[简单抓取]</li>
+<li>0x02·[解析网页]</li>
+</ul>
+<h2 id="0x00-简介"><a href="#0x00-简介" class="headerlink" title="0x00 简介"></a>0x00 简介</h2><ol>
+<li><p>requests 作为优秀的 Python 第三方的模块，当邂逅了之后，你就会向 urllib say goodbye 了, 本文会介绍一些 requests 的具体的使用方法。</p>
+</li>
+<li><p>beautifulsoup 作为常用的解析网页的第三方的模块，通过 “lxml” 作为解析器，可以达到速度和兼容性的平衡.<br>当然 xpath 也是一个很好的选择。re 还是无处不在的显示其强大的生命力。</p>
+</li>
+<li><p>在了解 requests Beautifulsoup4 的用法的基础上，一步步教你怎么构建一个简单的小型爬虫系统，</p>
+</li>
+</ol>
+<p>本文是对 requests Beautifulsoup4 的一个简单的综合应用，关于这两 Python 优秀的第三方模块的使用方法，可以看本文最后我给的参考文档</p>
+<h2 id="0x01-简单抓取"><a href="#0x01-简单抓取" class="headerlink" title="0x01 简单抓取"></a>0x01 简单抓取</h2><p>抓取一个网页并且把内容保存到本地</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> requests</span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">get_html</span><span class="params">(url)</span>:</span></span><br><span class="line">    html = requests.get(url)</span><br><span class="line">    <span class="keyword">with</span> open(<span class="string">'content.html'</span>, <span class="string">'wb'</span>) <span class="keyword">as</span> fw:</span><br><span class="line">        fw.write(html.content)</span><br><span class="line">        fw.close()</span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">'__main__'</span>:</span><br><span class="line">    url = <span class="string">"http://example.com"</span></span><br><span class="line">    get_html(url)</span><br></pre></td></tr></table></figure>
+
+
+
+<p>可是你会发现，大多数情况，这个代码是没法工作的，网站会对 request header 做一些限制，</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">get_html</span><span class="params">(url)</span>:</span></span><br><span class="line">    headers = &#123;</span><br><span class="line">        <span class="string">'User-Agent'</span>: <span class="string">"Mozilla/5.0 (Windows NT 6.2; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/49.0.2623.87 Safari/537.36"</span></span><br><span class="line">    &#125;</span><br><span class="line">    html = requests.get(url, headers=headers)</span><br><span class="line">    <span class="keyword">with</span> open(<span class="string">'content.html'</span>, <span class="string">'wb'</span>) <span class="keyword">as</span> fw:</span><br><span class="line">        fw.write(html.content)</span><br><span class="line">        fw.close()</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">'__main__'</span>:</span><br><span class="line">    url = <span class="string">"http://example.com"</span></span><br><span class="line">    get_html(url)</span><br></pre></td></tr></table></figure>
+
+
+<p>主要是后面的方法，我们假装好像浏览器的样子，<br>还有些网站需要检测 Request headers 里面的 Refer host 等字段，我们会在后面讲到<br>但是 0x01-1 的代码，还是不够健壮，因为，我们不知道请求是否成功了，如果最后保存到本地的，是一堆 404 的页面，显然是一件很让人沮丧的事情，我们在把代码改下，加上一个请求是否成功的代码。</p>
+<blockquote>
+<p>http 请求状态有很多种，大多数情况下 200 是我们理想中的状态，</p>
+</blockquote>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">get_data</span><span class="params">(url)</span>:</span></span><br><span class="line">    headers = &#123;</span><br><span class="line">        <span class="string">"User-Agent"</span>: <span class="string">"Mozilla/5.0 (Windows NT 6.2; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/49.0.2623.87 Safari/537.36"</span></span><br><span class="line">    &#125;</span><br><span class="line">    html = requests.get(url, headers=headers)</span><br><span class="line">    <span class="keyword">if</span> html.status_code == <span class="number">200</span>:</span><br><span class="line">        print(url, <span class="string">'@ok200'</span>, str(time.ctime()))</span><br><span class="line">        <span class="keyword">with</span> open(<span class="string">'content.html'</span>, <span class="string">'wb'</span>) <span class="keyword">as</span> fw:</span><br><span class="line">            fw.write(html.content)</span><br><span class="line">            fw.close()</span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        print(url, <span class="string">'wrong'</span>, str(time.ctime()))</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">'__main__'</span>:</span><br><span class="line">    url = <span class="string">"http://example.com"</span></span><br><span class="line">    get_data(url)</span><br></pre></td></tr></table></figure>
+
+<p>我们用 requests 的一个 status_code 方法来判断是否访问成功，然后使用 print 一下，相当于打印日志了，当我们做大规模抓取的时候，print 显然不是一个很好的选择，Python 的 logging 模块能够更好的胜任这项工作，为了方便起见，我们暂时使用简单直接粗暴的 print 来做代替 logging 的工作</p>
+<p>由于网络原因，可能会出现访问超时的问题，为了让代码更健壮，我们可以设置 timeout, 同时，如果确定网页不需要重定向， 可以设置 allow_redirects=False</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">get_data</span><span class="params">(url)</span>:</span></span><br><span class="line">    headers = &#123;</span><br><span class="line">        <span class="string">"User-Agent"</span>: <span class="string">"Mozilla/5.0 (Windows NT 6.2; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/49.0.2623.87 Safari/537.36"</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">try</span>:</span><br><span class="line">        html = requests.get(url, headers=headers, allow_redirects=Fasle, timeout=<span class="number">3</span>)</span><br><span class="line">        <span class="keyword">if</span> html.status_code == <span class="number">200</span>:</span><br><span class="line">            print(url, <span class="string">'@ok200'</span>, str(time.ctime()))</span><br><span class="line">            <span class="keyword">with</span> open(<span class="string">'content.html'</span>, <span class="string">'wb'</span>) <span class="keyword">as</span> fw:</span><br><span class="line">                fw.write(html.content)</span><br><span class="line">                fw.close()</span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            print(url, <span class="string">'wrong'</span>, str(time.ctime()))</span><br><span class="line">    <span class="keyword">except</span> Exception <span class="keyword">as</span> e:</span><br><span class="line">        print(url, e, str(time.ctime()))</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">'__main__'</span>:</span><br><span class="line">    url = <span class="string">"http://example.com"</span></span><br><span class="line">    get_data(url)</span><br></pre></td></tr></table></figure>
+
+<p>至此，我们完成了一个网页的抓取，并且做了相关的异常处理。</p>
+<h2 id="0x02-解析网页"><a href="#0x02-解析网页" class="headerlink" title="0x02 解析网页"></a>0x02 解析网页</h2><p>本节说明下，通过 re 和 beautifulsoup 的组合来解析网页</p>
+<p>####1. re (正则表达式) 提取网页<br>经常用的是贪婪匹配和非贪婪匹配，还有就是单行匹配还是全文匹配<br>最常用的方法是 re.findall 还有括号的使用<br>例如</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> re</span><br><span class="line">text = <span class="string">"""Sxchaoinfo@EgithubE</span></span><br><span class="line"><span class="string">    xchaoinfo@wechat</span></span><br><span class="line"><span class="string">    xchaoinfo@zhihuE"""</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>模式一</li>
+</ul>
+<figure class="highlight"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 加上 re.S 代表是全文匹配</span></span><br><span class="line">pa = <span class="string">r'S.*?E'</span></span><br><span class="line">re.findall(pa, text) -&gt; 返回的是["Sxchaoinfo@E",]</span><br><span class="line">re.findall(pa, text, re.S) -&gt; 返回的是["Sxchaoinfo@E",]</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>模式二</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">pa = <span class="string">r'S.*E'</span></span><br><span class="line">re.findall(pa, text) -&gt; 返回的是['Sxchaoinfo@EgithubE', ]</span><br><span class="line"></span><br><span class="line">re.findall(pa, text, re.S) -&gt; 返回的是</span><br><span class="line">[<span class="string">'Sxchaoinfo@EgithubE\n    xchaoinfo@wechat\n    xchaoinfo@zhihuE'</span>, ]</span><br></pre></td></tr></table></figure>
+
+
+<ul>
+<li>模式三</li>
+</ul>
+<figure class="highlight"><table><tr><td class="code"><pre><span class="line">pa = <span class="string">r'S(.*?)E'</span></span><br><span class="line">re.findall(pa, text) -&gt; 返回的是['xchaoinfo@',]</span><br></pre></td></tr></table></figure>
+
+<p>更佳详细的 re(正则表达式) 的使用方法，请参考文档获取其他网站的教程</p>
+<p>####2. beautifulsoup 提取网页</p>
+<p>Beautifulsoup 解析网页的时候推荐使用 lxml作为解析器，虽然 lxml 的安装可能会花费您一点时间，其他解析器的选择，可以参考官方的文档<br>最常用的方法是</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> bs4 <span class="keyword">import</span> BeautifulSoup</span><br><span class="line"></span><br><span class="line"><span class="comment"># 获取页面所有的 url 链接</span></span><br><span class="line">soup = BeautifulSoup(html_content, <span class="string">'lxml'</span>)</span><br><span class="line">ahref = soup.findAll(<span class="string">'a'</span>)</span><br><span class="line"><span class="keyword">for</span> a <span class="keyword">in</span> ahref:</span><br><span class="line">    print(a[<span class="string">'href'</span>])</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="参考文档"><a href="#参考文档" class="headerlink" title="参考文档"></a>参考文档</h2><ul>
+<li><a href="http://www.python-requests.org/en/master/" target="_blank" rel="noopener">Requests: HTTP for Humans</a></li>
+<li><a href="http://cn.python-requests.org/zh_CN/latest/" target="_blank" rel="noopener">requests 中文文档</a></li>
+<li><a href="https://www.crummy.com/software/BeautifulSoup/bs4/doc/" target="_blank" rel="noopener">BeautifulSoup Documentation</a></li>
+<li><a href="http://beautifulsoup.readthedocs.io/zh_CN/latest/" target="_blank" rel="noopener">BeautifulSoup 中文文档</a></li>
+</ul>
+]]></content>
+      <categories>
+        <category>Python</category>
+        <category>Python爬虫</category>
+      </categories>
+      <tags>
+        <tag>Python</tag>
+        <tag>Python爬虫</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Python 构建一个简单爬虫系统 (二)</title>
+    <url>/2016/10/01/2016/02--%20Python%20%E6%9E%84%E5%BB%BA%E4%B8%80%E4%B8%AA%E7%AE%80%E5%8D%95%E7%88%AC%E8%99%AB%E7%B3%BB%E7%BB%9F%20%E4%BA%8C/</url>
+    <content><![CDATA[<h2 id="目录"><a href="#目录" class="headerlink" title="目录"></a>目录</h2><ul>
+<li>0x00·[背景简介]</li>
+<li>0x01·[queue、threading 基础]</li>
+<li>0x02·[多线程爬虫实例]</li>
+</ul>
+<h2 id="背景简介"><a href="#背景简介" class="headerlink" title="背景简介"></a>背景简介</h2><p>Q1: 据说由于 GIL(全局锁) 的存在，Python 多线程很鸡肋，多线程 Python 爬虫能提高速度吗？</p>
+<p>A1: 要很好的回答这个问题，首先要搞清楚两个概念：进程与线程，I/O 密集型与计算密集型任务。</p>
+<h4 id="进程与线程"><a href="#进程与线程" class="headerlink" title="进程与线程"></a>进程与线程</h4><p>操作系统的设计，可以归结为三点：</p>
+<ol>
+<li>以多进程形式，允许多个任务同时运行；</li>
+<li>以多线程形式，允许单个任务分成不同的部分运行；</li>
+<li>提供协调机制，一方面防止进程之间和线程之间产生冲突，另一方面允许进程之间和线程之间共享资源。</li>
+</ol>
+<h4 id="I-O-密集型与计算密集型任务"><a href="#I-O-密集型与计算密集型任务" class="headerlink" title="I/O 密集型与计算密集型任务"></a>I/O 密集型与计算密集型任务</h4><p>简单的来说是频繁的进行 CPU 的计算，还是文件的读写操作。</p>
+<h4 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h4><p>对于计算密集型的任务，由于 GIL 的存在使用多进程，能提高计算效率<br>对于I/O 密集型的任务，例如网络爬虫，大多数时间都是等待从网上下载文件写入到本地，使用多线程能显著提高爬虫的爬取速度。</p>
+<h2 id="queue、threading-基础"><a href="#queue、threading-基础" class="headerlink" title="queue、threading 基础"></a>queue、threading 基础</h2><h3 id="queue"><a href="#queue" class="headerlink" title="queue"></a>queue</h3><p>queue 模块提供了一个适用于多线程编程的数据结构，可以用来在线程间安全地传递消息或者其他数据，它会为提供者处理锁定，使多个线程可以安全地处理同一个 queue 实例。</p>
+<p>下面介绍一些简单的用法，更复杂的用法参考 queue 的文档</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line"><span class="comment"># 创建一个 queue 实例</span></span><br><span class="line">q = queue.Queue()</span><br><span class="line"></span><br><span class="line"><span class="comment"># 向 queue 添加一个元素</span></span><br><span class="line">item = <span class="string">"xchaoinfo"</span></span><br><span class="line">q.put(item)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 从 queue 取得一个元素</span></span><br><span class="line">data = q.get()</span><br><span class="line"></span><br><span class="line"><span class="comment"># 获取 queue 的元素的个数</span></span><br><span class="line">q.qsize()</span><br><span class="line"></span><br><span class="line"><span class="comment"># 判断 queue 是否为空</span></span><br><span class="line">q.empty()</span><br></pre></td></tr></table></figure>
+
+<h3 id="threading"><a href="#threading" class="headerlink" title="threading"></a>threading</h3><p>threading 在 <code>_thread</code> 模块的基础的提供多线程处理的更高级别的接口。</p>
+<p>下面介绍一些 threading 的简单用法</p>
+<p>不带参数的线程创建</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> threading</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">do_work</span><span class="params">()</span>:</span></span><br><span class="line">    print(<span class="string">"start working"</span>)</span><br><span class="line"></span><br><span class="line">t = threading.Thread(target=do_work)</span><br><span class="line">t.start()</span><br></pre></td></tr></table></figure>
+<p>带参数的线程创建</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> threading</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">do_work</span><span class="params">(num)</span>:</span></span><br><span class="line">    print(<span class="string">"start working of %s"</span> % num)</span><br><span class="line"></span><br><span class="line"><span class="comment"># args 是 tuple 类型的参数，</span></span><br><span class="line">t = threading.Thread(target=do_work, args=(<span class="number">1</span>,))</span><br><span class="line">t.start()</span><br></pre></td></tr></table></figure>
+<p>其实，更常用的方法是继承 threading.Thread 类，然后重写 run 方法</p>
+<h2 id="多线程爬虫实例"><a href="#多线程爬虫实例" class="headerlink" title="多线程爬虫实例"></a>多线程爬虫实例</h2><p>假设我们已经把要爬取的 url 存放到 url.txt 文件里，并且每行存放一个 url, 每个 url 都是一张图片的地址，我们要把所有图片下载到本地，把 url 的后面部分来作为图片的文件名</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> requests</span><br><span class="line"><span class="keyword">import</span> threading</span><br><span class="line"><span class="keyword">import</span> queue</span><br><span class="line"><span class="keyword">import</span> os</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># 从 txt 文件中获取 url, 并且处理下载后的文件名</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">get_url_fn_from_txt</span><span class="params">()</span>:</span></span><br><span class="line">    path = <span class="string">"img/"</span></span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">not</span> os.path.exists(path):</span><br><span class="line">        os.mkdir(path)</span><br><span class="line">    <span class="keyword">with</span> open(<span class="string">"url.txt"</span>) <span class="keyword">as</span> fr:</span><br><span class="line">        url_list = [f.strip() <span class="keyword">for</span> f <span class="keyword">in</span> fr <span class="keyword">if</span> f.strip()]</span><br><span class="line"></span><br><span class="line">    url_fn_list = [tuple(u, path + u.split(<span class="string">"/"</span>)[<span class="number">-1</span>]) <span class="keyword">for</span> u <span class="keyword">in</span> url_list]</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> url_fn_list</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># 下载 img 的函数，下载成功返回 1 否则返回 0</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">download_img</span><span class="params">(url, fn)</span>:</span></span><br><span class="line">    <span class="keyword">try</span>:</span><br><span class="line">        <span class="keyword">if</span> os.path.exists(fn):</span><br><span class="line">            <span class="keyword">return</span> <span class="number">1</span></span><br><span class="line">        img = requests.get(url, timeout=<span class="number">3</span>)</span><br><span class="line">        <span class="keyword">with</span> open(fn, <span class="string">'wb'</span>) <span class="keyword">as</span> fw:</span><br><span class="line">            fw.write(img.content)</span><br><span class="line">            fw.close()</span><br><span class="line">        <span class="keyword">return</span> <span class="number">1</span></span><br><span class="line">    <span class="keyword">except</span>:</span><br><span class="line">        <span class="keyword">return</span> <span class="number">0</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">DownloadThread</span><span class="params">(threading.Thread)</span>:</span></span><br><span class="line">    <span class="string">"""重写 run 函数"""</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, que)</span>:</span></span><br><span class="line">        self.que = que</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">run</span><span class="params">(self)</span>:</span></span><br><span class="line">        <span class="keyword">while</span> <span class="keyword">not</span> self.que.empty():</span><br><span class="line">            url, fn = self.que.get()</span><br><span class="line">            <span class="comment"># for u in uid:</span></span><br><span class="line">            <span class="keyword">if</span> download_img(url, fn):</span><br><span class="line">                <span class="keyword">pass</span></span><br><span class="line">            <span class="keyword">else</span>:</span><br><span class="line">                self.que.put(tuple(url, fn))</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">main</span><span class="params">()</span>:</span></span><br><span class="line">    url_fn_list = get_url_fn_from_txt()</span><br><span class="line">    que = queue.Queue()</span><br><span class="line">    <span class="keyword">for</span> url_fn <span class="keyword">in</span> url_fn_list:</span><br><span class="line">        que.put(url_fn)</span><br><span class="line"></span><br><span class="line">    thread_num = <span class="number">20</span>  <span class="comment"># 线程数</span></span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> range(thread_num):</span><br><span class="line">        download = DownloadThread(que)</span><br><span class="line">        download.start()</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">'__main__'</span>:</span><br><span class="line">    main()</span><br></pre></td></tr></table></figure>
+
+
+<p>这是比较简陋的一个实例，可以在此基础上加入更多功能。如有错误，烦请指出，不胜感激。</p>
+<p>参考：</p>
+<ol>
+<li><a href="http://www.ruanyifeng.com/blog/2013/04/processes_and_threads.html" target="_blank" rel="noopener">http://www.ruanyifeng.com/blog/2013/04/processes_and_threads.html</a> (进程与线程)</li>
+<li><a href="http://blog.chinaunix.net/uid-116213-id-3086203.html" target="_blank" rel="noopener">http://blog.chinaunix.net/uid-116213-id-3086203.html</a> (I/O 密集型与计算密集型任务)</li>
+<li>queue 和 threading 的用法参考 Python 的文档</li>
+</ol>
+]]></content>
+      <categories>
+        <category>Python</category>
+        <category>Python爬虫</category>
+      </categories>
+      <tags>
+        <tag>Python</tag>
+        <tag>Python爬虫</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Python3 读写 csv</title>
+    <url>/2017/03/10/2017/04--%20Python3%20%E8%AF%BB%E5%86%99%20csv%20/</url>
+    <content><![CDATA[<h4 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h4><p>xchaoinfo 在用 Python 写爬虫的时候，百万以内的数据量，经常使用 csv 这种格式来存放数据。<br>优点：</p>
+<ol>
+<li>Python 内置模块读写方便</li>
+<li>纯文本格式并且保持一定的数据结构</li>
+<li>可以被 Excel 打开</li>
+</ol>
+<p>下面通过一些具体的实例来讨论 Python3 下读写 csv 的相关操作, demo 的代码都已经同步到 Github中了,<br>可访问 <code>https://github.com/xchaoinfo/Py-example-by-xchaoinfo</code><br>获取详细的代码</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"><span class="comment"># @Date    : 2017-02-26 22:59:55</span></span><br><span class="line"><span class="comment"># @Author  : xchaoinfo (xchaoinfo)</span></span><br><span class="line"><span class="comment"># @github  : https://github.com/xchaoinfo</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> csv</span><br><span class="line"><span class="string">"""</span></span><br><span class="line"><span class="string">data1.csv 的内容是</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">张三,北京,25</span></span><br><span class="line"><span class="string">李四,上海,30</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">data2.csv 的内容是</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">姓名,城市,年龄</span></span><br><span class="line"><span class="string">张三,北京,25</span></span><br><span class="line"><span class="string">李四,上海,30</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">"""</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># example 1 读取 csv 返回列表</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">read_csv</span><span class="params">(fn=<span class="string">'data1.csv'</span>)</span>:</span></span><br><span class="line">    <span class="string">"""</span></span><br><span class="line"><span class="string">    data1.csv 中数据格式，</span></span><br><span class="line"><span class="string">    读取返回列表比较容易处理</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">    """</span></span><br><span class="line">    <span class="comment"># 读取打印 - reader-example1</span></span><br><span class="line">    <span class="keyword">with</span> open(fn, encoding=<span class="string">"utf-8"</span>) <span class="keyword">as</span> fr:</span><br><span class="line">        csvfr = csv.reader(fr)</span><br><span class="line">        <span class="keyword">for</span> row <span class="keyword">in</span> csvfr:</span><br><span class="line">            print(<span class="string">", "</span>.join(row))</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 读取后，返回列表 - reader-example</span></span><br><span class="line">    <span class="keyword">with</span> open(fn, encoding=<span class="string">"utf-8"</span>) <span class="keyword">as</span> fr:</span><br><span class="line">        csvfr = csv.reader(fr)</span><br><span class="line">        rows = [row <span class="keyword">for</span> row <span class="keyword">in</span> csvfr]</span><br><span class="line">    <span class="keyword">return</span> rows</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># example 2 读取 csv 返回列表</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">read_csv_dict</span><span class="params">(fn=<span class="string">"data2.csv"</span>)</span>:</span></span><br><span class="line">    <span class="string">"""</span></span><br><span class="line"><span class="string">    data2.csv 的数据格式，</span></span><br><span class="line"><span class="string">    读取返回字典比较容易处理</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">    """</span></span><br><span class="line">    <span class="keyword">with</span> open(fn, encoding=<span class="string">"utf-8"</span>) <span class="keyword">as</span> fr:</span><br><span class="line">        dict_rows = csv.DictReader(fr, fieldnames=<span class="literal">None</span>)</span><br><span class="line">        <span class="comment"># 不指定 fieldnames 的情况下</span></span><br><span class="line">        <span class="comment"># 默认第一行数据作为 fieldnames</span></span><br><span class="line">        <span class="keyword">for</span> row <span class="keyword">in</span> dict_rows:</span><br><span class="line">            print(row)  <span class="comment"># row 是一个字典</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># example 3 list 或 tuple 写入到 csv</span></span><br><span class="line"><span class="comment"># 如果想要写入 utf8 编码的 CSV 文件可直接被 Excel 打开不乱码, </span></span><br><span class="line"><span class="comment"># 可以使用 utf-8-sig编码</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">write_csv</span><span class="params">(fn=<span class="string">"data1.csv"</span>)</span>:</span></span><br><span class="line">    <span class="keyword">with</span> open(fn, <span class="string">'w'</span>, newline=<span class="string">""</span>, encoding=<span class="string">"utf-8"</span>) <span class="keyword">as</span> fw:</span><br><span class="line">        fwcsv = csv.writer(fw)</span><br><span class="line">        one = (<span class="string">"张三"</span>, <span class="string">"北京"</span>, <span class="string">"25"</span>)  <span class="comment"># tuple</span></span><br><span class="line">        two = [<span class="string">"李四"</span>, <span class="string">"上海"</span>, <span class="string">"30"</span>]  <span class="comment"># list</span></span><br><span class="line">        fwcsv.writerow(one)</span><br><span class="line">        fwcsv.writerow(two)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># example 4 dict 写入到 csv 中</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">write_dict_csv</span><span class="params">(fn=<span class="string">"data2.csv"</span>)</span>:</span></span><br><span class="line">    dict1 = &#123;</span><br><span class="line">        <span class="string">"姓名"</span>: <span class="string">"张三"</span>,</span><br><span class="line">        <span class="string">"城市"</span>: <span class="string">"北京"</span>,</span><br><span class="line">        <span class="string">"年龄"</span>: <span class="string">"25"</span></span><br><span class="line">    &#125;</span><br><span class="line">    dict2 = &#123;</span><br><span class="line">        <span class="string">"姓名"</span>: <span class="string">"李四"</span>,</span><br><span class="line">        <span class="string">"城市"</span>: <span class="string">"上海"</span>,</span><br><span class="line">        <span class="string">"年龄"</span>: <span class="string">"30"</span></span><br><span class="line">    &#125;</span><br><span class="line">    fieldnames = [<span class="string">"姓名"</span>, <span class="string">"城市"</span>, <span class="string">"年龄"</span>]</span><br><span class="line">    <span class="keyword">with</span> open(fn, <span class="string">'w'</span>, newline=<span class="string">""</span>, encoding=<span class="string">"utf-8"</span>) <span class="keyword">as</span> fwd:</span><br><span class="line">        fwdcsv = csv.DictWriter(fwd, fieldnames=fieldnames)</span><br><span class="line">        fwdcsv.writeheader()</span><br><span class="line">        fwdcsv.writerow(dict1)</span><br><span class="line">        fwdcsv.writerow(dict2)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">'__main__'</span>:</span><br><span class="line">    write_dict_csv()</span><br><span class="line">    write_csv()</span><br><span class="line">    read_csv()</span><br><span class="line">    read_csv_dict()</span><br></pre></td></tr></table></figure>
+
+
+]]></content>
+      <categories>
+        <category>Python</category>
+        <category>Python基础</category>
+      </categories>
+      <tags>
+        <tag>Python</tag>
+        <tag>Python基础</tag>
+        <tag>CSV</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>xlwings 让你的 Excel 飞起来 </title>
+    <url>/2017/03/16/2017/05--%20xlwings%20%E8%AE%A9%E4%BD%A0%E7%9A%84%20Excel%20%E9%A3%9E%E8%B5%B7%E6%9D%A5/</url>
+    <content><![CDATA[<h3 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h3><p>众所周知，VBA 可以很高效的操作 Excel，提高办公效率。在 Python 中，我们可以通过 pywin32 来调用 windows 系统的 API 来实现 VBA 的很多功能，但是写起来比较复杂。</p>
+<p>开始之前, 回忆一下使用 Excel 的场景。<br>我们会同时打开多个 Excel 文件, 多个 workbook, 每个 workbook 又可以用多个 sheet。<br>同时，我们还会在多个 sheet workbook Excel 窗口之间切换。<br>对一个或多个单元格进行增删改查，设置格式，合并分拆等操作。<br>利用 xlwings 这些操作都可以轻松搞定，一次编写彻底解决”手抽筋的问题” </p>
+<p>xlwings 是基于 BSD-licensed 的一个 Python 第三方的模块，对 pywin32 进行了封装，可以很方便的和 Excel 进行交互，它有以下优点：</p>
+<ol>
+<li>语法接近 VBA</li>
+<li>可以用 Python 代码取代 VBA 编写宏</li>
+<li>在 windows 可以用 Python 编写 Excel 用户自定义函数</li>
+<li>全功能支持 Numpy Pandas matplotlib 等科学计算库</li>
+<li>支持 Windows 和 MacOS</li>
+<li>支持 Py2.7 Py3.3+</li>
+</ol>
+<p>xlwings 可以让你的 Excel 飞起来，正如 Selenium 可以让你的浏览器飞起来一样。</p>
+<h3 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h3><p>推荐使用 Anaconda <a href="https://www.continuum.io/downloads" target="_blank" rel="noopener">https://www.continuum.io/downloads</a> 来安装，可以省去很多麻烦，</p>
+<figure class="highlight plain"><figcaption><span>install xlwings```</span></figcaption><table><tr><td class="code"><pre><span class="line">使用 pip 安装，需要先手动安装 pywin32 下载地址</span><br><span class="line">https:&#x2F;&#x2F;sourceforge.net&#x2F;projects&#x2F;pywin32&#x2F;files&#x2F;pywin32&#x2F; </span><br><span class="line"></span><br><span class="line">安装 pywin32 后，使用 pip 安装即可</span><br><span class="line"></span><br><span class="line">&#96;&#96;&#96;pip install xlwings</span><br></pre></td></tr></table></figure>
+
+<p>官方安装文档<br><a href="http://docs.xlwings.org/en/stable/installation.html" target="_blank" rel="noopener">http://docs.xlwings.org/en/stable/installation.html</a></p>
+<h3 id="快速入门"><a href="#快速入门" class="headerlink" title="快速入门"></a>快速入门</h3><h4 id="打开工作表"><a href="#打开工作表" class="headerlink" title="打开工作表"></a>打开工作表</h4><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">import xlwings as xw</span><br><span class="line"># 打开一个新的 workbook </span><br><span class="line">wb &#x3D; xw.Book()</span><br><span class="line"># 打开当前目录已经存在的一个 workbook </span><br><span class="line">wb &#x3D; xw.Book(&#39;FileName.xlsx&#39;)</span><br><span class="line"></span><br><span class="line"># 输入完整的路径打开一个 workbook </span><br><span class="line">FileName &#x3D; &quot;C:\\python\\to\\file.xlsx&quot;</span><br><span class="line">FileName &#x3D; r&quot;C:\python\to\file.xlsx&quot;</span><br><span class="line"># 注意 windows 字符 &quot;\&quot; 逃逸的问题</span><br><span class="line">wb &#x3D; xw.Book(fn)</span><br></pre></td></tr></table></figure>
+
+<h4 id="打开-sheet-的三种方式"><a href="#打开-sheet-的三种方式" class="headerlink" title="打开 sheet 的三种方式"></a>打开 sheet 的三种方式</h4><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line"># 打开第一个 sheet</span><br><span class="line">sheet &#x3D; wb.sheets[0]</span><br><span class="line"># 打开名字为 &quot;xchaoinfo&quot; sheet</span><br><span class="line">sheet &#x3D; wb.sheets[&quot;xchaoinfo&quot;]</span><br><span class="line"># 打开当前活动的 sheet</span><br><span class="line">sheet &#x3D; wb.sheets.active</span><br></pre></td></tr></table></figure>
+
+<h4 id="读写数据到-sheet-中"><a href="#读写数据到-sheet-中" class="headerlink" title="读写数据到 sheet 中"></a>读写数据到 sheet 中</h4><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line"># 当前活动的 sheet 中读写一个单元格的数据</span><br><span class="line">&gt;&gt;&gt; import xlwings as xw</span><br><span class="line">&gt;&gt;&gt; wb &#x3D; xw.Book()</span><br><span class="line">&gt;&gt;&gt; sht &#x3D; wb.sheets.active</span><br><span class="line">&gt;&gt;&gt; sht.range(&#39;A1&#39;).value &#x3D; &quot;xchaoinfo&quot;</span><br><span class="line">&gt;&gt;&gt; sht.range(&#39;A1&#39;).value</span><br><span class="line">&#39;xchaoinfo&#39;</span><br><span class="line"># 当前活动的 sheet 中读写一行单元格的数据</span><br><span class="line"># 将列表储存在A1：C1中</span><br><span class="line">&gt;&gt;&gt; sht.range(&#39;A1&#39;).value&#x3D;[&quot;name&quot;,&quot;age&quot;,&quot;gender&quot;]</span><br><span class="line">&gt;&gt;&gt; sht.range(&#39;A1:C1&#39;).value</span><br><span class="line">[&#39;name&#39;, &#39;age&#39;, &#39;gender&#39;]</span><br><span class="line"># 当前活动的 sheet 中读写一列单元格的数据</span><br><span class="line"># 将列表储存在A1:A3中</span><br><span class="line">&gt;&gt;&gt; sht.range(&#39;A1&#39;).options(transpose&#x3D;True).value&#x3D;[&quot;xchaoinfo&quot;,18,1]</span><br><span class="line">&gt;&gt;&gt; sht.range(&quot;A1:A3&quot;).value</span><br><span class="line">[&#39;xchaoinfo&#39;, 18.0, 1.0]</span><br><span class="line">&gt;&gt;&gt; sht.range(&#39;A1:A3&#39;).value &#x3D; [&quot;Robot&quot;, 20, 2]</span><br><span class="line">&gt;&gt;&gt; sht.range(&quot;A1:A3&quot;).value</span><br><span class="line">[&#39;Robot&#39;, 18.0, 1.0]</span><br><span class="line"># 当前活动的 sheet 中读写多行多列单元格的数据</span><br><span class="line"># 将2x2表格，即二维数组，储存在A1:B2中，如第一行1，2，第二行3，4</span><br><span class="line">&gt;&gt;&gt; wb &#x3D; xw.Book()</span><br><span class="line">&gt;&gt;&gt; sht &#x3D; wb.sheets.active</span><br><span class="line">&gt;&gt;&gt; sht.range(&#39;A1&#39;).options(expand&#x3D;&#39;table&#39;)&#x3D;[[1,2],[3,4]]</span><br><span class="line">&gt;&gt;&gt; sht.range(&quot;A1&quot;).expand().value</span><br><span class="line">[[1.0, 2.0], [3.0, 4.0]]</span><br><span class="line"># expand 的详细用法请参考文档</span><br><span class="line">&gt;&gt;&gt; sht.range(&#39;A1:B2&#39;).value &#x3D; [[1,2],[3,4]]</span><br><span class="line">&gt;&gt;&gt; sht.range(&#39;A1:B2&#39;).value</span><br><span class="line">[[1.0, 2.0], [3.0, 4.0]]</span><br></pre></td></tr></table></figure>
+
+<h3 id="应用实例"><a href="#应用实例" class="headerlink" title="应用实例"></a>应用实例</h3><p>删除 Excel 文件中，满足条件的单元格所在的一整行</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">#!&#x2F;usr&#x2F;bin&#x2F;env python3</span><br><span class="line"># -*- coding: utf-8 -*-</span><br><span class="line"># @Date    : 2017-03-16 14:14:03</span><br><span class="line"># @Author  : xchaoinfo (xchaoinfo)</span><br><span class="line"># @github  : https:&#x2F;&#x2F;github.com&#x2F;xchaoinfo</span><br><span class="line"></span><br><span class="line">import xlwings as xw</span><br><span class="line"></span><br><span class="line">fn &#x3D; &quot;data.xlsx&quot;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">class DeleteTools(object):</span><br><span class="line">    &quot;&quot;&quot;删除满足某些条件的行</span><br><span class="line">    data.xlsx 中有很多重复的数据</span><br><span class="line">    需要删除那些重复的</span><br><span class="line">    &quot;&quot;&quot;</span><br><span class="line"></span><br><span class="line">    def __init__(self, fn):</span><br><span class="line">        super(DeleteTools, self).__init__()</span><br><span class="line">        self.ExistSet &#x3D; set()</span><br><span class="line">        self.ToDelList &#x3D; list()</span><br><span class="line">        self.fn &#x3D; fn</span><br><span class="line"></span><br><span class="line">    def rule(self, value):</span><br><span class="line">        # 可以自定义规则来操作</span><br><span class="line">        pass</span><br><span class="line"></span><br><span class="line">    def Delete(self):</span><br><span class="line">        # visible 控制 Excel 打开是否显示界面</span><br><span class="line">        # add_book 控制是否添加新的 workbook</span><br><span class="line">        app &#x3D; xw.App(visible&#x3D;True, add_book&#x3D;False)</span><br><span class="line">        # app.display_alerts &#x3D; False</span><br><span class="line"></span><br><span class="line">        # 打开 data.xlsx 文件到 wookbook 中</span><br><span class="line">        wb &#x3D; app.books.open(fn)</span><br><span class="line">        # 切换到当前活动的 sheet 中</span><br><span class="line">        sheet &#x3D; wb.sheets.active</span><br><span class="line"></span><br><span class="line">        # 选择 A1 所在的一列</span><br><span class="line">        # 当 Excel 格式复杂的时候,不建议使用 expand</span><br><span class="line">        # 可以这样选择</span><br><span class="line">        ARange &#x3D; sheet.range(&quot;A1:A100&quot;)</span><br><span class="line">        # ARange &#x3D; sheet.range(&quot;A1&quot;).expand(&quot;down&quot;)</span><br><span class="line">        for A in ARange:</span><br><span class="line">            if str(A.value).strip() not in self.ExistSet:</span><br><span class="line">                self.ExistSet.add(str(A.value).strip())</span><br><span class="line">            else:</span><br><span class="line">                # address &#x3D; A.address</span><br><span class="line">                # 获取 A 所在的位置坐标</span><br><span class="line">                self.ToDelList.append(A.address)</span><br><span class="line">                # print(A.value)</span><br><span class="line"></span><br><span class="line">        while self.ToDelList:</span><br><span class="line">            td &#x3D; self.ToDelList.pop()</span><br><span class="line">            # 删除 A 所在的一行</span><br><span class="line">            sheet.range(td).api.EntireRow.Delete()</span><br><span class="line">        # 保存 wookbook</span><br><span class="line">        # 相当于Excel 的 Ctrl+S 快捷键</span><br><span class="line">        sheet.autofit()</span><br><span class="line">        wb.save()</span><br><span class="line">        app.quit()</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">if __name__ &#x3D;&#x3D; &#39;__main__&#39;:</span><br><span class="line">    d &#x3D; DeleteTools(fn)</span><br><span class="line">    d.Delete()</span><br></pre></td></tr></table></figure>
+
+<h3 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h3><p>插上翅膀，让Excel飞起来——xlwings（一）<br><a href="http://www.jianshu.com/p/e21894fc5501" target="_blank" rel="noopener">http://www.jianshu.com/p/e21894fc5501</a><br>xlwings 官方文档<br><a href="http://docs.xlwings.org/en/stable/" target="_blank" rel="noopener">http://docs.xlwings.org/en/stable/</a></p>
+<p>更多内容详见官方文档</p>
+<p>文中的代码示例可以在 github 上找到 <a href="https://github.com/xchaoinfo/Py-example-by-xchaoinfo" target="_blank" rel="noopener">https://github.com/xchaoinfo/Py-example-by-xchaoinfo</a><br>本文同步发布在 知乎专栏: 可爱的 Python</p>
+<p>首发于微信公众号：xchaoinfo</p>
+]]></content>
+      <categories>
+        <category>Python</category>
+        <category>Excel</category>
+      </categories>
+      <tags>
+        <tag>Python</tag>
+        <tag>Excel</tag>
+        <tag>xlwings</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>json 在 Python 爬虫的应用</title>
+    <url>/2017/03/13/2017/07--%20json%20%E5%9C%A8%20Python%20%E7%88%AC%E8%99%AB%E7%9A%84%E5%BA%94%E7%94%A8/</url>
+    <content><![CDATA[<p>本文是 xchaoinfo 在写 Python 爬虫，使用 json 的一个总结。</p>
+<h3 id="数据存储"><a href="#数据存储" class="headerlink" title="数据存储"></a>数据存储</h3><p>json 这种轻量级的数据交换格式。易于人阅读和编写。同时也易于机器解析和生成，同时可以存储丰富的数据结构。<br>xchaoinfo 比较喜欢这样存储数据,<br>每行一个 json 数据，这样在大文件读写的时候比较方便，我存储和读取过几个 G 的十几个参数的微博用户信息的数据。写入 json 的时候分多次写入，读取的时候边读取边解析 json，基本不会出现内存不足的问题</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">d1 = &#123;<span class="string">"id"</span>: <span class="number">1</span>, <span class="string">"name"</span>: <span class="string">'xchaoinfo'</span>&#125;</span><br><span class="line">d2 = &#123;<span class="string">"id"</span>: <span class="number">2</span>, <span class="string">"name"</span>: <span class="string">'Python'</span>&#125;</span><br><span class="line">ls = [d1, d2]</span><br><span class="line"></span><br><span class="line"><span class="comment"># 写入</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">with</span> open(<span class="string">"data.json"</span>, <span class="string">'w'</span>) <span class="keyword">as</span> fw:</span><br><span class="line">    fw.write(<span class="string">"\n"</span>.join([json.dumps(l) <span class="keyword">for</span> l <span class="keyword">in</span> ls]))</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 读取</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">with</span> open(<span class="string">"data.json"</span>) <span class="keyword">as</span> fr:</span><br><span class="line">    <span class="keyword">for</span> f <span class="keyword">in</span> fr:</span><br><span class="line">        js = json.loads(f)</span><br><span class="line">        print(js)</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="网络请求"><a href="#网络请求" class="headerlink" title="网络请求"></a>网络请求</h3><p>在爬虫开发过程中，构造 GET 或者 POST 请求获取数据是比较常用的技巧。<br>这里介绍三个特例</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment"># post json 数据</span></span><br><span class="line">params = &#123;</span><br><span class="line">    <span class="string">"page"</span>: <span class="string">"1"</span>,</span><br><span class="line">    <span class="string">"user"</span>: <span class="string">"xchaoinfo"</span></span><br><span class="line">&#125;</span><br><span class="line">html = requests.post(url, data=json.dumps(params))</span><br><span class="line"></span><br><span class="line"><span class="comment"># 需要对中文编码两次</span></span><br><span class="line"><span class="keyword">from</span> urllib.parse <span class="keyword">import</span> quote_plus</span><br><span class="line"><span class="keyword">import</span> requests</span><br><span class="line">params = &#123;</span><br><span class="line">    <span class="string">"page"</span>: <span class="string">"1"</span>,</span><br><span class="line">    <span class="string">"code"</span>: quote_plus(<span class="string">"中国"</span>)</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment"># 请求的时候 requests 自动 URL 编码一次</span></span><br><span class="line">html = requests.get(url, params=params)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 需要对中文进行 encode 为 GBK</span></span><br><span class="line"><span class="comment"># 一般出现在建站时间比较长的网站</span></span><br><span class="line">params = &#123;</span><br><span class="line">    <span class="string">"page"</span>: <span class="string">"1"</span>,</span><br><span class="line">    <span class="string">"code"</span>: <span class="string">"中国"</span>.encode(<span class="string">"gbk"</span>)</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment"># 请求的时候 requests 自动 URL 编码一次</span></span><br><span class="line">html = requests.get(url, params=params)</span><br></pre></td></tr></table></figure>
+<p>xchaoinfo 通过读取 javascript 源码才恍然大悟的，从此走上了在 Python 开发中阅读 javascript 源码的不归路。</p>
+<p>注：例子 2 和 3, 有些乱入了，其实 GET POST 的Python 的字典数据结构</p>
+<h3 id="数据解析"><a href="#数据解析" class="headerlink" title="数据解析"></a>数据解析</h3><ol>
+<li><p>不知道是否遇到这种类型的类似 json 的数据格式<br><code>jsonp_1492356362(json_format_data)</code><br>可以使用字符串的 <code>replace</code> 方法替换后解析，如果你觉得解析变动的的时间戳比较麻烦，可以用 <code>re.sub</code> 处理后解析</p>
+</li>
+<li><p>如果你最近爬取过知乎的数据，就会发现数据被放到 一个 div 的 data=xxx 中了。下面提供一个解析知乎用户页的方法</p>
+</li>
+</ol>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">soup = BeautifulSoup(html, <span class="string">'lxml'</span>)</span><br><span class="line">data = soup.find(<span class="string">"div"</span>, id=<span class="string">"data"</span>)[<span class="string">'data-state'</span>]</span><br><span class="line">js = json.loads(data)</span><br></pre></td></tr></table></figure>
+<p>同时这样有一个关于微博解析的方式，和知乎的解析方式差不多<br><a href="https://www.zhihu.com/question/49695115/answer/118352288" target="_blank" rel="noopener">https://www.zhihu.com/question/49695115/answer/118352288</a></p>
+<p>这是 xchaoinfo 一些简单的总结，欢迎提出更多关于 Python 爬虫开发中 json 的应用技巧</p>
+<p>首发于微信公众号 xchaoinfo</p>
+]]></content>
+      <categories>
+        <category>Python</category>
+        <category>Python基础</category>
+      </categories>
+      <tags>
+        <tag>Python</tag>
+        <tag>Python基础</tag>
+        <tag>json</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>PyPDF2 用 Python 操作 PDF</title>
+    <url>/2017/04/30/2017/16--%20PyPDF2%20%E7%94%A8%20Python%20%E6%93%8D%E4%BD%9C%20PDF%20/</url>
+    <content><![CDATA[<p>最近需要处理一些 PDF, 简单来说，就是需要对一些 PDF 进行合并分割等一些操作，由于 PDF 的数量有点多，使用一些 PDF 的工具来处理这个事情，一个个去点击处理，对于一个 Pythoner 来说，简直不能更傻了。xchaoinfo 在知乎问题 <a href="https://www.zhihu.com/question/57100452/answer/159680639" target="_blank" rel="noopener">如何使用自己的编程能力提升生活质量？</a> 回答的说</p>
+<blockquote>
+<p>简单可重复的工作，坚决不做第二次，通通写个脚本自动化</p>
+</blockquote>
+<p>果断直接去 awesome-Python 去找找有没有 Python 操作 PDF 的优秀的第三方模块，发现 PyPDF2 满足我的需求，但是我在网上搜的好多教程都是基于 PyPDF 的，但是 PyPDF 自 2010年 12月开始就不在更新了，PyPDF2 接棒 PyPDF, 并且支持 Py2 Py3 的版本。故写此文简单介绍下 PyPDF2，已期对诸君有所益。<br>本文基于 Python3.4.4 PyPDF2==1.26.0</p>
+<h3 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h3><p>直接使用 pip 安装就可以了<br><code>pip install PyPDF2</code></p>
+<p>PyPDF2 包含了 <code>PdfFileReader PdfFileMerger PageObject PdfFileWriter</code> 四个常用的主要 Class。</p>
+<p>###　简单读写 PDF</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> PyPDF2 <span class="keyword">import</span> PdfFileReader, PdfFileWriter</span><br><span class="line">infn = <span class="string">'infn.pdf'</span></span><br><span class="line">outfn = <span class="string">'outfn.pdf'</span></span><br><span class="line"><span class="comment"># 获取一个 PdfFileReader 对象</span></span><br><span class="line">pdf_input = PdfFileReader(open(infn, <span class="string">'rb'</span>))</span><br><span class="line"><span class="comment"># 获取 PDF 的页数</span></span><br><span class="line">page_count = pdf_input.getNumPages()</span><br><span class="line">print(page_count)</span><br><span class="line"><span class="comment"># 返回一个 PageObject</span></span><br><span class="line">page = pdf_input.getPage(i)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 获取一个 PdfFileWriter 对象</span></span><br><span class="line">pdf_output = PdfFileWriter()</span><br><span class="line"><span class="comment"># 将一个 PageObject 加入到 PdfFileWriter 中</span></span><br><span class="line">pdf_output.addPage(page)</span><br><span class="line"><span class="comment"># 输出到文件中</span></span><br><span class="line">pdf_output.write(open(outfn, <span class="string">'wb'</span>))</span><br></pre></td></tr></table></figure>
+
+<h3 id="应用实例-合并分割-PDF"><a href="#应用实例-合并分割-PDF" class="headerlink" title="应用实例 合并分割 PDF"></a>应用实例 合并分割 PDF</h3><figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> PyPDF2 <span class="keyword">import</span> PdfFileReader, PdfFileWriter</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">split_pdf</span><span class="params">(infn, outfn)</span>:</span></span><br><span class="line">    pdf_output = PdfFileWriter()</span><br><span class="line">    pdf_input = PdfFileReader(open(infn, <span class="string">'rb'</span>))</span><br><span class="line">    <span class="comment"># 获取 pdf 共用多少页</span></span><br><span class="line">    page_count = pdf_input.getNumPages()</span><br><span class="line">    print(page_count)</span><br><span class="line">    <span class="comment"># 将 pdf 第五页之后的页面，输出到一个新的文件</span></span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">5</span>, page_count):</span><br><span class="line">        pdf_output.addPage(pdf_input.getPage(i))</span><br><span class="line">    pdf_output.write(open(outfn, <span class="string">'wb'</span>))</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">merge_pdf</span><span class="params">(infnList, outfn)</span>:</span></span><br><span class="line">    pdf_output = PdfFileWriter()</span><br><span class="line">    <span class="keyword">for</span> infn <span class="keyword">in</span> infnList:</span><br><span class="line">        pdf_input = PdfFileReader(open(infn, <span class="string">'rb'</span>))</span><br><span class="line">        <span class="comment"># 获取 pdf 共用多少页</span></span><br><span class="line">        page_count = pdf_input.getNumPages()</span><br><span class="line">        print(page_count)</span><br><span class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> range(page_count):</span><br><span class="line">            pdf_output.addPage(pdf_input.getPage(i))</span><br><span class="line">    pdf_output.write(open(outfn, <span class="string">'wb'</span>))</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">'__main__'</span>:</span><br><span class="line">    infn = <span class="string">'infn.pdf'</span></span><br><span class="line">    outfn = <span class="string">'outfn.pdf'</span></span><br><span class="line">    split_pdf(infn, outfn)</span><br></pre></td></tr></table></figure>
+
+<p>应用实例源代码可以在 <a href="https://github.com/xchaoinfo/Py-example-by-xchaoinfo" target="_blank" rel="noopener">https://github.com/xchaoinfo/Py-example-by-xchaoinfo</a> 找到。<br>Refer: <a href="http://pythonhosted.org/PyPDF2/" target="_blank" rel="noopener">http://pythonhosted.org/PyPDF2/</a></p>
+]]></content>
+      <categories>
+        <category>Python</category>
+        <category>pdf</category>
+      </categories>
+      <tags>
+        <tag>Python</tag>
+        <tag>pdf</tag>
+        <tag>pypdf2</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Git Tag</title>
+    <url>/2020/01/09/2020/git/Git-Tag-%E6%A0%87%E7%AD%BE/</url>
+    <content><![CDATA[<p><code>git tag</code> 命令用来为 Git 仓库历史记录中的某个节点，指定一个永久的书签，一般情况下用于版本发布的相关事宜。</p>
+<p>Git 标签分为轻量级标签和附注标签两种类型</p>
+<h3 id="列出标签"><a href="#列出标签" class="headerlink" title="列出标签"></a>列出标签</h3><ol>
+<li>列出所有的标签<br><code>git tag</code></li>
+<li>列出本地的特定版本的标签<br><code>git tag -l &quot;v1.2*&quot;</code></li>
+</ol>
+<h3 id="标签管理"><a href="#标签管理" class="headerlink" title="标签管理"></a>标签管理</h3><ol>
+<li>添加轻量化标签<br><code>git tag v0.1</code></li>
+<li>添加附注型标签<br><code>git tag -a v0.1 -m &quot;v0.1 tag to pushlish&quot;</code></li>
+<li>为某个历史记录添加标签<br><code>git tag -a v0.2 3b7c315 -m &quot;v0.2&quot;</code></li>
+<li>删除标签<br><code>git tag -d v0.1</code></li>
+</ol>
+<h3 id="共享标签，将本地的标签同步到远端"><a href="#共享标签，将本地的标签同步到远端" class="headerlink" title="共享标签，将本地的标签同步到远端"></a>共享标签，将本地的标签同步到远端</h3><ol>
+<li>共享 v0.1 标签到远端仓库<br><code>git push origin v0.1</code> </li>
+<li>共享本地所有的标签到远端仓库<br><code>git push origin --tags</code> </li>
+<li>查看远端仓库的有哪些标签<br><code>git ls-remote</code></li>
+<li>删除标签, 并且同步到远端仓库</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git tag -d v0.1 </span><br><span class="line">git push origin :refs/tags/v0.1</span><br></pre></td></tr></table></figure>
+
+<h3 id="从-Tag-开始开发"><a href="#从-Tag-开始开发" class="headerlink" title="从 Tag 开始开发"></a>从 Tag 开始开发</h3><p>如果某个版本发布之后，出现了 bug, 可以从 tag 新建一个分支让后开发</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git checkout v0.1</span><br><span class="line">git branch v0.1-fix</span><br></pre></td></tr></table></figure>
+
+<p>或者可以简写为<br><code>git checkout -b v0.1-fix v0.1</code></p>
+]]></content>
+      <categories>
+        <category>Git</category>
+      </categories>
+      <tags>
+        <tag>Git-Tag</tag>
+        <tag>Git-版本发布</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Git安装与配置</title>
+    <url>/2020/01/06/2020/git/Git%E5%AE%89%E8%A3%85%E4%B8%8E%E9%85%8D%E7%BD%AE/</url>
+    <content><![CDATA[<h2 id="安装与配置"><a href="#安装与配置" class="headerlink" title="安装与配置"></a>安装与配置</h2><h3 id="Git-安装"><a href="#Git-安装" class="headerlink" title="Git 安装"></a>Git 安装</h3><p>Git 的安装非常简单，<a href="https://git-scm.com/downloads" target="_blank" rel="noopener">Git 的官网</a> 详细的介绍了 Git 的安装方式,<br>当然如果你使用 Git 的场景比较简单，又不想学习 Git 的命令操作方式，也可以安装 Git 的图形界面的客户端，例如 Github-Desktop / source tree / 海龟git 等等</p>
+<p>与 Git 命令的操作方式相比，图形界面的操作方式更加直观, 但 Git 命令的操作方式，功能更完善，效率更高.</p>
+<h3 id="Git-配置"><a href="#Git-配置" class="headerlink" title="Git 配置"></a>Git 配置</h3><p>Git 有非常多的配置选项，从用户的基本信息，操作习惯，颜色配置都可以高度的可定制化，本节主要讨论一些 Git 中常用的配置选项，更多的配置可以参考官方文档</p>
+<h4 id="Git-配置基本概念"><a href="#Git-配置基本概念" class="headerlink" title="Git 配置基本概念"></a>Git 配置基本概念</h4><p>git 中有系统、全局和本地三个不同级别的配置，Git的配置文件是纯文本的，你可以手动编辑这些文件，但通过 git config 加上对应级别的参数来修改配置文件，是更好的选择。</p>
+<ul>
+<li>系统配置 –system<br>配置文件分为 /etc/gitconfig  系统级别的配置, 对全部用户的所有git项目生效<br>通过 <code>git config --system</code> 进行配置</li>
+<li>全局配置 –global<br>配置文件分为  ~/.gitconfig 或者 ~/.config/git/config 对当前用户的所有git项目生效<br>通过 <code>git config --global</code> 进行配置 </li>
+<li>本地配置 –local<br>配置文件为 .git/config ,仅仅对当前的git项目生效,<br>通过 <code>git config --local</code> 或 <code>git config</code> 进行配置</li>
+</ul>
+<p>以上三个级别中的每个级别的配置(系统、全局、本地) 都会覆盖上一个级别的配置，所以 .git/config 的配置会覆盖 /etc/gitconfig 的配置</p>
+<h4 id="Git-常用配置"><a href="#Git-常用配置" class="headerlink" title="Git 常用配置"></a>Git 常用配置</h4><p>Git 配置可分为服务端和客户端的，对于普通的 Git 用户来说，只需配置本机的 Git 客户端。虽然 Git 中有丰富的配置选项, 但仅仅只要配置一些常用的选项，就可以打造专属于你的高效 Git 开发环境。</p>
+<ol>
+<li><p>配置用户名称和邮箱</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git config --global user.name xchaoinfo</span><br><span class="line">git config --global user.email xchaoinfo@qq.com</span><br></pre></td></tr></table></figure></li>
+<li><p>配置在Git使用的编辑器</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git config --global core.editor vim</span><br></pre></td></tr></table></figure>
+<p>完成上面的基本配置，就可以使用Git进行开发工作了，但是更好的提高开发效率，你也可以设置如下的选项</p>
+</li>
+<li><p>配置提交模板, 让团队的统一提交风格</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git config commit.template ~/.gitmessage.txt</span><br></pre></td></tr></table></figure></li>
+<li><p>git log 是否分页，更好的展示 git log 的结果，默认是 less 分页，可以设置为 “” 显示全部内容</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git config core.pager <span class="string">""</span></span><br></pre></td></tr></table></figure></li>
+<li><p>自动修改输入错误, 单位为 1/10秒，例如设置5秒后, 自动修正命令后执行</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git config help.autocorrect 50</span><br></pre></td></tr></table></figure></li>
+<li><p>对常用的操作设置别名，提高 Git 使用效率<br>首先你可以在 Bash 的配置文件设置 Git 的别名，例如<br><code>alias g=&quot;git&quot;</code><br>同时你可以对 Git 的常用命令设置别名, 例如</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git config --global alias.ci commit</span><br><span class="line">git config --global alias.co checkout</span><br><span class="line">git config --global alias.br branch</span><br><span class="line">git config --global alias.st status</span><br><span class="line"><span class="comment">## 这样可以快速的输入</span></span><br><span class="line">g ci == git commit </span><br><span class="line">g co == git checkout</span><br><span class="line">g br == git branch</span><br><span class="line">g st == git status</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>查看配置信息的列表<br>后面可以加 –global –local –system 查看不同级别的配置</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git config --list [--glolal/<span class="built_in">local</span>/system]</span><br></pre></td></tr></table></figure>
+
+
+</li>
+</ol>
+]]></content>
+      <categories>
+        <category>Git</category>
+      </categories>
+      <tags>
+        <tag>Git 安装</tag>
+        <tag>Git 配置</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Git 分支操作</title>
+    <url>/2020/01/14/2020/git/git-branch/</url>
+    <content><![CDATA[<h2 id="强大的分支"><a href="#强大的分支" class="headerlink" title="强大的分支"></a>强大的分支</h2><h3 id="git-branch-分支的基本概念"><a href="#git-branch-分支的基本概念" class="headerlink" title="git branch 分支的基本概念"></a>git branch 分支的基本概念</h3><h3 id="git-branch-分支操作"><a href="#git-branch-分支操作" class="headerlink" title="git branch 分支操作"></a>git branch 分支操作</h3><h3 id="分支工作流"><a href="#分支工作流" class="headerlink" title="分支工作流"></a>分支工作流</h3><ol>
+<li>查看分支<br>git branch 查看本地分支列表<br>git branch -r 查看远程分支列表<br>git branch -a 查看所有的分支列表，包括本地和远程</li>
+</ol>
+<p>git branch -v 列出当前的所有分支以及它们的最后一次提交<br>git branch -vv 列出本地分支以及最后一次条件和远程仓库的缩写</p>
+<p>git branch –merged 查看哪些分支已经合并到当前分支<br>git branch –no-merged 查看哪些分支尚未合并到当前分支</p>
+<ol>
+<li><p>新建分支<br>git branch xxx</p>
+</li>
+<li><p>切换分支<br>git checkout xxx</p>
+</li>
+<li><p>创建并且切换分支<br><code>git checkout -b xxx</code> 的是如下命令的缩写</p>
+</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git branch xxx</span><br><span class="line">git checkout xxx</span><br></pre></td></tr></table></figure>
+
+<ol start="3">
+<li>删除分支</li>
+</ol>
+<p>git branch -d xxx 删除已经合并的分支<br>git branch -D xxx 强制删除分支, 包括尚未合并的分支</p>
+<h3 id="远程分支"><a href="#远程分支" class="headerlink" title="远程分支"></a>远程分支</h3><p>git remote<br>git remote show<br>git remote show origin<br>git ls-remote </p>
+<p>git remote add hello <a href="https://github.com/xchaoinfo/hello" target="_blank" rel="noopener">https://github.com/xchaoinfo/hello</a></p>
+<p>git remote -v</p>
+<p>git fetch orgin 拉取远程分支到本地 master 分支</p>
+<p>git push –set-upstream origin branch_name</p>
+<p>–set-upstream 的意义在于本地分支与远程的分支关联<br>下次可以直接 git push 完成提交</p>
+<p>如果远程分支删除，但是本地关联的分支没有删除，可以使用 git remote prune 来删除</p>
+<h2 id="5-git-与远程服务通信"><a href="#5-git-与远程服务通信" class="headerlink" title="5. git 与远程服务通信"></a>5. git 与远程服务通信</h2><h3 id="git-fetch"><a href="#git-fetch" class="headerlink" title="git fetch"></a>git fetch</h3><h3 id="git-push"><a href="#git-push" class="headerlink" title="git push"></a>git push</h3><h2 id="6-git-高阶操作"><a href="#6-git-高阶操作" class="headerlink" title="6. git 高阶操作"></a>6. git 高阶操作</h2><ol>
+<li>fork 后更新原来repo的更新内容</li>
+</ol>
+<p>git remote -v</p>
+<p><code>git remote add analaysisTool http://gitlab.com/xchao/analaysisTool.git</code></p>
+<p>git remote -v<br>出现目前源的内容</p>
+<p>git fetch analaysisTool<br>git merge analaysisTool\master</p>
+<p>git branch -r 查看远程分支<br>git branch -a 查看所有分支</p>
+<h2 id="远端仓库"><a href="#远端仓库" class="headerlink" title="远端仓库"></a>远端仓库</h2><h2 id="Github-协作流程"><a href="#Github-协作流程" class="headerlink" title="Github 协作流程"></a>Github 协作流程</h2><p>git push –set-upstream origin branch_name</p>
+<p>–set-upstream 的意义在于本地分支与远程的分支关联<br>下次可以直接 git push 完成提交</p>
+<h3 id="查看当前有哪些分支"><a href="#查看当前有哪些分支" class="headerlink" title="查看当前有哪些分支"></a>查看当前有哪些分支</h3><p>git remote -v</p>
+<p>git remote add xchaoinfo <a href="http://gitlab.com/xchao/analaysisTool.git" target="_blank" rel="noopener">http://gitlab.com/xchao/analaysisTool.git</a></p>
+<p>git remote -v<br>出现目前源的内容</p>
+<p>git fetch analaysisTool<br>git merge analaysisTool\master</p>
+<p>git branch -r 查看远程分支<br>git branch -a 查看所有分支</p>
+<p>git push xxx origin xxx</p>
+]]></content>
+      <categories>
+        <category>Git</category>
+      </categories>
+      <tags>
+        <tag>Git</tag>
+        <tag>Git分支</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Git 删除和移动文件</title>
+    <url>/2020/01/14/2020/git/git%E5%88%A0%E9%99%A4%E5%92%8C%E7%A7%BB%E5%8A%A8/</url>
+    <content><![CDATA[<p><code>git rm</code> 用于删除已经提交和工作区的文件<br><code>git rm --cached</code> 用于删除暂存区的文件 </p>
+<p><code>git rm hello.txt</code> 可以简单的理解为</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">rm hello.txt</span><br><span class="line">git add hello.txt</span><br></pre></td></tr></table></figure>
+
+<p>git rm<br>git mv </p>
+<p>可以看做是几个命令的组合</p>
+]]></content>
+      <categories>
+        <category>Git</category>
+      </categories>
+      <tags>
+        <tag>Python</tag>
+      </tags>
+  </entry>
+</search>

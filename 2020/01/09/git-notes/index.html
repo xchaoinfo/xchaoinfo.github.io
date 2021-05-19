@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#3c3">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#3c3">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/font-awesome@4/css/font-awesome.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('http://xchaoinfo.github.io').hostname,
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.6.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","padding":18,"offset":12,"onmobile":true},
+    copycode: {"enable":true,"show_result":true,"style":"flat"},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":true},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    comments: {"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="Learn Git The Hard Way">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Learn Git The Hard Way">
+<meta property="og:url" content="http://xchaoinfo.github.io/2020/01/09/git-notes/index.html">
+<meta property="og:site_name" content="xchaoinfo">
+<meta property="og:description" content="Learn Git The Hard Way">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2020-01-09T14:45:15.000Z">
+<meta property="article:modified_time" content="2021-05-19T08:47:43.986Z">
+<meta property="article:author" content="xchaoinfo">
+<meta property="article:tag" content="Git">
+<meta property="article:tag" content="Github">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://xchaoinfo.github.io/2020/01/09/git-notes/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true
+  };
+</script>
+
+  <title>Learn Git The Hard Way | xchaoinfo</title>
+  
+
+
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?c77c61364fc570da10ee073c7afa8122";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">xchaoinfo</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+
+</nav>
+  <div class="site-search">
+    <div class="popup search-popup">
+    <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="none"
+           placeholder="搜索..." spellcheck="false"
+           type="text" id="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result"></div>
+
+</div>
+<div class="search-pop-overlay"></div>
+
+  </div>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+  <a href="https://github.com/xchaoinfo" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://xchaoinfo.github.io/2020/01/09/git-notes/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/xchaoinfo.jpg">
+      <meta itemprop="name" content="xchaoinfo">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="xchaoinfo">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Learn Git The Hard Way
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-01-09 22:45:15" itemprop="dateCreated datePublished" datetime="2020-01-09T22:45:15+08:00">2020-01-09</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E5%BC%80%E5%8F%91%E5%B7%A5%E5%85%B7/" itemprop="url" rel="index">
+                    <span itemprop="name">开发工具</span>
+                  </a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E5%BC%80%E5%8F%91%E5%B7%A5%E5%85%B7/Git/" itemprop="url" rel="index">
+                    <span itemprop="name">Git</span>
+                  </a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>12k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>11 分钟</span>
+            </span>
+            <div class="post-description">Learn Git The Hard Way</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="内容提要"><a href="#内容提要" class="headerlink" title="内容提要"></a>内容提要</h2><ol>
+<li><p><a href="#安装与配置">安装与配置</a><br> 1.1 <a href="#Git-安装">Git 安装</a><br> 1.2 <a href="#Git-配置">Git 配置</a></p>
+</li>
+<li><p>[基本概念与设计思路]</p>
+</li>
+<li><p>[开始使用]</p>
+</li>
+<li><p>[强大的分支]</p>
+</li>
+<li><p>[远端仓库]</p>
+</li>
+<li><p>[Github 协作流程]</p>
+</li>
+<li><p>[实践指南]</p>
+</li>
+</ol>
+<h2 id="基本概念与设计思路"><a href="#基本概念与设计思路" class="headerlink" title="基本概念与设计思路"></a>基本概念与设计思路</h2><p>主要讨论 Git 的一些基本概念，同时讨论 Git 的一些设计思路，这对于更好的使用 Git 至关重要</p>
+<h3 id="Git-是什么"><a href="#Git-是什么" class="headerlink" title="Git 是什么?"></a>Git 是什么?</h3><p>Git 更像是一个小型的文件系统, 提供了许多以此为基础构建的工具, 而不仅只是一个版本控制工具</p>
+<h3 id="Git-版本控制中的文件状态"><a href="#Git-版本控制中的文件状态" class="headerlink" title="Git 版本控制中的文件状态"></a>Git 版本控制中的文件状态</h3><p>git 系统中可以分为 已追踪(traced)和没有追踪(untraced)两类<br>其中, 已经 traced 的文件,<br>modified  已修改<br>staged    已暂存的状态, 等待提交<br>committed 提交的状态</p>
+<h2 id="开始使用"><a href="#开始使用" class="headerlink" title="开始使用"></a>开始使用</h2><h3 id="创建一个-Git-项目"><a href="#创建一个-Git-项目" class="headerlink" title="创建一个 Git 项目"></a>创建一个 Git 项目</h3><p>想要创建一个 Git 项目非常简单，你可以使用 <code>git init</code> 快速的初始化一个项目</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">mkdir git-demo</span><br><span class="line">git init</span><br></pre></td></tr></table></figure>
+<p>当然更加常用的是 <code>git clone</code> 从远端仓库直接 clone 一个项目</p>
+<p><code>git add .</code> 所有文件添加到暂缓区<br><code>git add -u</code> 所有修改的文件添加到暂缓区</p>
+<h3 id="查看项目的状态"><a href="#查看项目的状态" class="headerlink" title="查看项目的状态"></a>查看项目的状态</h3><p>git status</p>
+<h3 id="提交快照"><a href="#提交快照" class="headerlink" title="提交快照"></a>提交快照</h3><p>git commit -m “快速的提交”<br>git commit 打开你的编辑器提交</p>
+<p>git log </p>
+<p>git add 添加 untracked 的文件<br>git add 理解为添加内容到下一次提交中, 而不是添加文件到项目中, 更为合适。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">git status </span><br><span class="line">git status -s 简单的信息</span><br></pre></td></tr></table></figure>
+<h4 id="对比修改的状态"><a href="#对比修改的状态" class="headerlink" title="对比修改的状态"></a>对比修改的状态</h4><p>git diff 对应 modified<br>git diff –cached /–staged 对应文件状态 staged 查看修改的内容</p>
+<h2 id="3-git-基本操作"><a href="#3-git-基本操作" class="headerlink" title="3. git 基本操作"></a>3. git 基本操作</h2><h3 id="初始化项目"><a href="#初始化项目" class="headerlink" title="初始化项目"></a>初始化项目</h3><p>本地<br>mkdir awesome-project<br>cd awesome-project<br>git init<br>git add .<br>git commit -m “初始化项目”</p>
+<p>远端<br>git clone git/https 地址</p>
+<p>git add filename 支持Liux 通配符 . * 等<br>git commit -m “本次提交的简要信息”<br>git commit -a -m 相当于 git add and git commit</p>
+<h2 id="5-git-与远程服务通信"><a href="#5-git-与远程服务通信" class="headerlink" title="5. git 与远程服务通信"></a>5. git 与远程服务通信</h2><h3 id="git-clone"><a href="#git-clone" class="headerlink" title="git clone"></a>git clone</h3><h3 id="git-fetch"><a href="#git-fetch" class="headerlink" title="git fetch"></a>git fetch</h3><h3 id="git-push"><a href="#git-push" class="headerlink" title="git push"></a>git push</h3><h2 id="6-git-高阶操作"><a href="#6-git-高阶操作" class="headerlink" title="6. git 高阶操作"></a>6. git 高阶操作</h2><h2 id="fork-分支如果与主分支保持同步"><a href="#fork-分支如果与主分支保持同步" class="headerlink" title="fork 分支如果与主分支保持同步"></a>fork 分支如果与主分支保持同步</h2><ol>
+<li>Github 上操作</li>
+<li>本地 git 操作</li>
+</ol>
+<h2 id="实践指南"><a href="#实践指南" class="headerlink" title="实践指南"></a>实践指南</h2><h3 id="日常使用-Git-整理"><a href="#日常使用-Git-整理" class="headerlink" title="日常使用 Git 整理"></a>日常使用 Git 整理</h3><p>整理最常使用的 Git 命令以及它们的应用场景</p>
+<h2 id="DESCRIPTION"><a href="#DESCRIPTION" class="headerlink" title="DESCRIPTION"></a>DESCRIPTION</h2><p>Git users can broadly be grouped into four categories for the purposes of describing here a small set of useful command for everyday Git.</p>
+<p>Individual Developer (Standalone) commands are essential for anybody who makes a commit, even for somebody who works alone.</p>
+<p>If you work with other people, you will need commands listed in the Individual Developer (Participant) section as well.</p>
+<p>People who play the Integrator role need to learn some more commands in addition to the above.</p>
+<p>Repository Administration commands are for system administrators who are responsible for the care and feeding of Git repositories.</p>
+<h2 id="Individual-Developer-Standalone"><a href="#Individual-Developer-Standalone" class="headerlink" title="Individual Developer (Standalone)"></a>Individual Developer (Standalone)</h2><p>A standalone individual developer does not exchange patches with other people, and works alone in a single repository, using the following commands.</p>
+<p>git-init[1] to create a new repository.</p>
+<p>git-log[1] to see what happened.</p>
+<p>git-checkout[1] and git-branch[1] to switch branches.</p>
+<p>git-add[1] to manage the index file.</p>
+<p>git-diff[1] and git-status[1] to see what you are in the middle of doing.</p>
+<p>git-commit[1] to advance the current branch.</p>
+<p>git-reset[1] and git-checkout[1] (with pathname parameters) to undo changes.</p>
+<p>git-merge[1] to merge between local branches.</p>
+<p>git-rebase[1] to maintain topic branches.</p>
+<p>git-tag[1] to mark a known point.</p>
+<h2 id="Ex01-引入源码开始一个-Git-项目"><a href="#Ex01-引入源码开始一个-Git-项目" class="headerlink" title="Ex01 引入源码开始一个 Git 项目"></a>Ex01 引入源码开始一个 Git 项目</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">tar zxf frotz.tar.gz</span><br><span class="line"><span class="built_in">cd</span> frotz </span><br><span class="line">git init</span><br><span class="line">git add . <span class="comment"># 添加当前项目中的一切到 Git 管理中</span></span><br><span class="line">git commit -m <span class="string">"import of frotz source tree."</span></span><br><span class="line">git tag v2.43  <span class="comment"># 添加一个标签</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="Ex02-创建一个新的相关分支并进行开发"><a href="#Ex02-创建一个新的相关分支并进行开发" class="headerlink" title="Ex02 创建一个新的相关分支并进行开发"></a>Ex02 创建一个新的相关分支并进行开发</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">git checkout -b alsa-audio (1)</span><br><span class="line">edit/compile/<span class="built_in">test</span></span><br><span class="line">git checkout -- curses/ux_audio_oss.c (2)</span><br><span class="line">git add curses/ux_audio_alsa.c (3)</span><br><span class="line">edit/compile/<span class="built_in">test</span></span><br><span class="line">git diff HEAD (4)</span><br><span class="line">git commit -a -s (5)</span><br><span class="line">edit/compile/<span class="built_in">test</span></span><br><span class="line">git diff HEAD^ (6)</span><br><span class="line">git commit -a --amend (7)</span><br><span class="line">git checkout master (8)</span><br><span class="line">git merge alsa-audio (9)</span><br><span class="line">git <span class="built_in">log</span> --since=<span class="string">'3 days ago'</span> (10)</span><br><span class="line">git <span class="built_in">log</span> v2.43.. curses/ (11)</span><br></pre></td></tr></table></figure>
+<p>create a new topic branch.</p>
+<p>revert your botched changes in curses/ux_audio_oss.c.</p>
+<p>you need to tell Git if you added a new file; removal and modification will be caught if you do git commit -a later.</p>
+<p>to see what changes you are committing.</p>
+<p>commit everything, as you have tested, with your sign-off.</p>
+<p>look at all your changes including the previous commit.</p>
+<p>amend the previous commit, adding all your new changes, using your original message.</p>
+<p>switch to the master branch.</p>
+<p>merge a topic branch into your master branch.</p>
+<p>review commit logs; other forms to limit output can be combined and include -10 (to show up to 10 commits), –until=2005-12-10, etc.</p>
+<p>view only the changes that touch what’s in curses/ directory, since v2.43 tag.</p>
+<h2 id="Individual-Developer-Participant"><a href="#Individual-Developer-Participant" class="headerlink" title="Individual Developer (Participant)"></a>Individual Developer (Participant)</h2><p>A developer working as a participant in a group project needs to learn how to communicate with others, and uses these commands in addition to the ones needed by a standalone developer.</p>
+<p>git-clone[1] from the upstream to prime your local repository.</p>
+<p>git-pull[1] and git-fetch[1] from “origin” to keep up-to-date with the upstream.</p>
+<p>git-push[1] to shared repository, if you adopt CVS style shared repository workflow.</p>
+<p>git-format-patch[1] to prepare e-mail submission, if you adopt Linux kernel-style public forum workflow.</p>
+<p>git-send-email[1] to send your e-mail submission without corruption by your MUA.</p>
+<p>git-request-pull[1] to create a summary of changes for your upstream to pull.</p>
+<p>Examples<br>Clone the upstream and work on it. Feed changes to upstream.<br>$ git clone git://git.kernel.org/pub/scm/…/torvalds/linux-2.6 my2.6<br>$ cd my2.6<br>$ git checkout -b mine master (1)<br>$ edit/compile/test; git commit -a -s (2)<br>$ git format-patch master (3)<br>$ git send-email –to=”person <a href="mailto:&#x65;&#109;&#97;&#105;&#x6c;&#64;&#x65;&#120;&#97;&#109;&#112;&#108;&#x65;&#46;&#x63;&#x6f;&#x6d;">&#x65;&#109;&#97;&#105;&#x6c;&#64;&#x65;&#120;&#97;&#109;&#112;&#108;&#x65;&#46;&#x63;&#x6f;&#x6d;</a>“ 00*.patch (4)<br>$ git checkout master (5)<br>$ git pull (6)<br>$ git log -p ORIG_HEAD.. arch/i386 include/asm-i386 (7)<br>$ git ls-remote –heads <a href="http://git.kernel.org/.../jgarzik/libata-dev.git" target="_blank" rel="noopener">http://git.kernel.org/.../jgarzik/libata-dev.git</a> (8)<br>$ git pull git://git.kernel.org/pub/…/jgarzik/libata-dev.git ALL (9)<br>$ git reset –hard ORIG_HEAD (10)<br>$ git gc (11)<br>(1) checkout a new branch mine from master.</p>
+<p>(2) repeat as needed.</p>
+<p>(3) extract patches from your branch, relative to master,</p>
+<p>(4) and email them.</p>
+<p>(5) return to master, ready to see what’s new</p>
+<p>(6) git pull fetches from origin by default and merges into the current branch.</p>
+<p>(7) immediately after pulling, look at the changes done upstream since last time we checked, only in the area we are interested in.</p>
+<p>(8) check the branch names in an external repository (if not known).</p>
+<p>(9) fetch from a specific branch ALL from a specific repository and merge it.</p>
+<p>(10) revert the pull.</p>
+<p>garbage collect leftover objects from reverted pull.</p>
+<p>Push into another repository.<br>satellite$ git clone mothership:frotz frotz (1)<br>satellite$ cd frotz<br>satellite$ git config –get-regexp ‘^(remote|branch).‘ (2)<br>remote.origin.url mothership:frotz<br>remote.origin.fetch refs/heads/<em>:refs/remotes/origin/</em><br>branch.master.remote origin<br>branch.master.merge refs/heads/master<br>satellite$ git config remote.origin.push <br>       +refs/heads/<em>:refs/remotes/satellite/</em> (3)<br>satellite$ edit/compile/test/commit<br>satellite$ git push origin (4)</p>
+<p>mothership$ cd frotz<br>mothership$ git checkout master<br>mothership$ git merge satellite/master (5)<br>mothership machine has a frotz repository under your home directory; clone from it to start a repository on the satellite machine.</p>
+<p>clone sets these configuration variables by default. It arranges git pull to fetch and store the branches of mothership machine to local remotes/origin/* remote-tracking branches.</p>
+<p>arrange git push to push all local branches to their corresponding branch of the mothership machine.</p>
+<p>push will stash all our work away on remotes/satellite/* remote-tracking branches on the mothership machine. You could use this as a back-up method. Likewise, you can pretend that mothership “fetched” from you (useful when access is one sided).</p>
+<p>on mothership machine, merge the work done on the satellite machine into the master branch.</p>
+<p>Branch off of a specific tag.<br>$ git checkout -b private2.6.14 v2.6.14 (1)<br>$ edit/compile/test; git commit -a<br>$ git checkout master<br>$ git cherry-pick v2.6.14..private2.6.14 (2)<br>create a private branch based on a well known (but somewhat behind) tag.</p>
+<p>forward port all changes in private2.6.14 branch to master branch without a formal “merging”. Or longhand<br>git format-patch -k -m –stdout v2.6.14..private2.6.14 | git am -3 -k</p>
+<p>An alternate participant submission mechanism is using the git request-pull or pull-request mechanisms (e.g as used on GitHub (<a href="http://www.github.com" target="_blank" rel="noopener">www.github.com</a>) to notify your upstream of your contribution.</p>
+<h2 id="Integrator"><a href="#Integrator" class="headerlink" title="Integrator"></a>Integrator</h2><p>A fairly central person acting as the integrator in a group project receives changes made by others, reviews and integrates them and publishes the result for others to use, using these commands in addition to the ones needed by participants.</p>
+<p>This section can also be used by those who respond to git request-pull or pull-request on GitHub (<a href="http://www.github.com" target="_blank" rel="noopener">www.github.com</a>) to integrate the work of others into their history. A sub-area lieutenant for a repository will act both as a participant and as an integrator.</p>
+<p>git-am[1] to apply patches e-mailed in from your contributors.</p>
+<p>git-pull[1] to merge from your trusted lieutenants.</p>
+<p>git-format-patch[1] to prepare and send suggested alternative to contributors.</p>
+<p>git-revert[1] to undo botched commits.</p>
+<p>git-push[1] to publish the bleeding edge.</p>
+<p>Examples<br>A typical integrator’s Git day.<br>$ git status (1)<br>$ git branch –no-merged master (2)<br>$ mailx (3)<br>&amp; s 2 3 4 5 ./+to-apply<br>&amp; s 7 8 ./+hold-linus<br>&amp; q<br>$ git checkout -b topic/one master<br>$ git am -3 -i -s ./+to-apply (4)<br>$ compile/test<br>$ git checkout -b hold/linus &amp;&amp; git am -3 -i -s ./+hold-linus (5)<br>$ git checkout topic/one &amp;&amp; git rebase master (6)<br>$ git checkout pu &amp;&amp; git reset –hard next (7)<br>$ git merge topic/one topic/two &amp;&amp; git merge hold/linus (8)<br>$ git checkout maint<br>$ git cherry-pick master~4 (9)<br>$ compile/test<br>$ git tag -s -m “GIT 0.99.9x” v0.99.9x (10)<br>$ git fetch ko &amp;&amp; for branch in master maint next pu (11)<br>    do<br>    git show-branch ko/$branch $branch (12)<br>    done<br>$ git push –follow-tags ko (13)<br>see what you were in the middle of doing, if anything.</p>
+<p>see which branches haven’t been merged into master yet. Likewise for any other integration branches e.g. maint, next and pu (potential updates).</p>
+<p>read mails, save ones that are applicable, and save others that are not quite ready (other mail readers are available).</p>
+<p>apply them, interactively, with your sign-offs.</p>
+<p>create topic branch as needed and apply, again with sign-offs.</p>
+<p>rebase internal topic branch that has not been merged to the master or exposed as a part of a stable branch.</p>
+<p>restart pu every time from the next.</p>
+<p>and bundle topic branches still cooking.</p>
+<p>backport a critical fix.</p>
+<p>create a signed tag.</p>
+<p>make sure master was not accidentally rewound beyond that already pushed out.</p>
+<p>In the output from git show-branch, master should have everything ko/master has, and next should have everything ko/next has, etc.</p>
+<p>push out the bleeding edge, together with new tags that point into the pushed history.</p>
+<p>In this example, the ko shorthand points at the Git maintainer’s repository at kernel.org, and looks like this:</p>
+<p>(in .git/config)<br>[remote “ko”]<br>    url = kernel.org:/pub/scm/git/git.git<br>    fetch = refs/heads/<em>:refs/remotes/ko/</em><br>    push = refs/heads/master<br>    push = refs/heads/next<br>    push = +refs/heads/pu<br>    push = refs/heads/maint</p>
+<h2 id="Repository-Administration"><a href="#Repository-Administration" class="headerlink" title="Repository Administration"></a>Repository Administration</h2><p>A repository administrator uses the following tools to set up and maintain access to the repository by developers.</p>
+<p>git-daemon[1] to allow anonymous download from repository.</p>
+<p>git-shell[1] can be used as a restricted login shell for shared central repository users.</p>
+<p>git-http-backend[1] provides a server side implementation of Git-over-HTTP (“Smart http”) allowing both fetch and push services.</p>
+<p>gitweb[1] provides a web front-end to Git repositories, which can be set-up using the git-instaweb[1] script.</p>
+<p>update hook howto has a good example of managing a shared central repository.</p>
+<p>In addition there are a number of other widely deployed hosting, browsing and reviewing solutions such as:</p>
+<p>gitolite, gerrit code review, cgit and others.</p>
+<p>Examples<br>We assume the following in /etc/services<br>$ grep 9418 /etc/services<br>git     9418/tcp        # Git Version Control System<br>Run git-daemon to serve /pub/scm from inetd.<br>$ grep git /etc/inetd.conf<br>git stream  tcp nowait  nobody <br>  /usr/bin/git-daemon git-daemon –inetd –export-all /pub/scm<br>The actual configuration line should be on one line.</p>
+<p>Run git-daemon to serve /pub/scm from xinetd.<br>$ cat /etc/xinetd.d/git-daemon</p>
+<h1 id="default-off"><a href="#default-off" class="headerlink" title="default: off"></a>default: off</h1><h1 id="description-The-Git-server-offers-access-to-Git-repositories"><a href="#description-The-Git-server-offers-access-to-Git-repositories" class="headerlink" title="description: The Git server offers access to Git repositories"></a>description: The Git server offers access to Git repositories</h1><p>service git<br>{<br>    disable = no<br>    type            = UNLISTED<br>    port            = 9418<br>    socket_type     = stream<br>    wait            = no<br>    user            = nobody<br>    server          = /usr/bin/git-daemon<br>    server_args     = –inetd –export-all –base-path=/pub/scm<br>    log_on_failure  += USERID<br>}<br>Check your xinetd(8) documentation and setup, this is from a Fedora system. Others might be different.</p>
+<p>Give push/pull only access to developers using git-over-ssh.<br>e.g. those using: $ git push/pull ssh://host.xz/pub/scm/project</p>
+<p>$ grep git /etc/passwd (1)<br>alice:x:1000:1000::/home/alice:/usr/bin/git-shell<br>bob:x:1001:1001::/home/bob:/usr/bin/git-shell<br>cindy:x:1002:1002::/home/cindy:/usr/bin/git-shell<br>david:x:1003:1003::/home/david:/usr/bin/git-shell<br>$ grep git /etc/shells (2)<br>/usr/bin/git-shell<br>log-in shell is set to /usr/bin/git-shell, which does not allow anything but git push and git pull. The users require ssh access to the machine.</p>
+<p>in many distributions /etc/shells needs to list what is used as the login shell.</p>
+<p>CVS-style shared repository.<br>$ grep git /etc/group (1)<br>git:x:9418:alice,bob,cindy,david<br>$ cd /home/devo.git<br>$ ls -l (2)<br>  lrwxrwxrwx   1 david git    17 Dec  4 22:40 HEAD -&gt; refs/heads/master<br>  drwxrwsr-x   2 david git  4096 Dec  4 22:40 branches<br>  -rw-rw-r–   1 david git    84 Dec  4 22:40 config<br>  -rw-rw-r–   1 david git    58 Dec  4 22:40 description<br>  drwxrwsr-x   2 david git  4096 Dec  4 22:40 hooks<br>  -rw-rw-r–   1 david git 37504 Dec  4 22:40 index<br>  drwxrwsr-x   2 david git  4096 Dec  4 22:40 info<br>  drwxrwsr-x   4 david git  4096 Dec  4 22:40 objects<br>  drwxrwsr-x   4 david git  4096 Nov  7 14:58 refs<br>  drwxrwsr-x   2 david git  4096 Dec  4 22:40 remotes<br>$ ls -l hooks/update (3)<br>  -r-xr-xr-x   1 david git  3536 Dec  4 22:40 update<br>$ cat info/allowed-users (4)<br>refs/heads/master   alice|cindy<br>refs/heads/doc-update   bob<br>refs/tags/v[0-9]*   david<br>place the developers into the same git group.</p>
+<p>and make the shared repository writable by the group.</p>
+<p>use update-hook example by Carl from Documentation/howto/ for branch policy control.</p>
+<p>alice and cindy can push into master, only bob can push into doc-update. david is the release manager and is the only person who can create and push version tags.</p>
+<p>写作原则，在原来已有文章的基础上，写的更详细</p>
+<p>配置与帮助<br>git config<br>git help</p>
+<p>获取与创建项目<br>git init<br>git clone</p>
+<p>快照基础<br>git add<br>git status<br>git diff<br>git difftool<br>git commit</p>
+<p>git reset<br>git rm<br>git mv<br>git clean</p>
+<p>git branch<br>git log<br>git checkout<br>git merge<br>git stash<br>git tag</p>
+<p>git remote<br>git pull<br>git push<br>git fetch</p>
+<ol>
+<li><p><a href="#1-基本概念">基本概念</a></p>
+</li>
+<li><p><a href="#2-Git-配置">git 配置</a></p>
+</li>
+<li><p>git 基础</p>
+<ul>
+<li>本地仓库/远程仓库</li>
+<li>git log</li>
+<li>tag 标签</li>
+</ul>
+</li>
+<li><p>git branch 分支操作</p>
+</li>
+<li><p>Github开源贡献流程</p>
+</li>
+<li><p>git examples</p>
+</li>
+<li><p>github 开发流程</p>
+</li>
+<li><p>git 与远程服务通信<br> git clone<br> git fetch<br> git push</p>
+</li>
+<li><p>git 高阶操作</p>
+</li>
+</ol>
+
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div></div>
+  <button disable="enable" onclick="var qr = document.getElementById(&quot;qr&quot;); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="xchaoinfo 微信支付">
+        <p>微信支付</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>xchaoinfo
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="http://xchaoinfo.github.io/2020/01/09/git-notes/" title="Learn Git The Hard Way">http://xchaoinfo.github.io/2020/01/09/git-notes/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/zh-CN" rel="noopener" target="_blank"><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          
+          <div class="post-tags">
+              <a href="/tags/Git/" rel="tag"><i class="fa fa-tag"></i> Git</a>
+              <a href="/tags/Github/" rel="tag"><i class="fa fa-tag"></i> Github</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/01/09/jupyter/" rel="prev" title="再谈 Jupyter Notebook 的使用">
+      <i class="fa fa-chevron-left"></i> 再谈 Jupyter Notebook 的使用
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2020/01/09/04-Emmet-%E8%AE%A9%E4%BD%A0%E7%9A%84HTML%E9%A3%9E%E8%B5%B7%E6%9D%A5-%E5%89%8D%E7%AB%AF%E5%88%A9%E5%99%A8/" rel="next" title="Emmet 让你的HTML飞起来--前端利器">
+      Emmet 让你的HTML飞起来--前端利器 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let activeClass = CONFIG.comments.activeClass;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#内容提要"><span class="nav-number">1.</span> <span class="nav-text">内容提要</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#基本概念与设计思路"><span class="nav-number">2.</span> <span class="nav-text">基本概念与设计思路</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Git-是什么"><span class="nav-number">2.1.</span> <span class="nav-text">Git 是什么?</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Git-版本控制中的文件状态"><span class="nav-number">2.2.</span> <span class="nav-text">Git 版本控制中的文件状态</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#开始使用"><span class="nav-number">3.</span> <span class="nav-text">开始使用</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#创建一个-Git-项目"><span class="nav-number">3.1.</span> <span class="nav-text">创建一个 Git 项目</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#查看项目的状态"><span class="nav-number">3.2.</span> <span class="nav-text">查看项目的状态</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#提交快照"><span class="nav-number">3.3.</span> <span class="nav-text">提交快照</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#对比修改的状态"><span class="nav-number">3.3.1.</span> <span class="nav-text">对比修改的状态</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-git-基本操作"><span class="nav-number">4.</span> <span class="nav-text">3. git 基本操作</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#初始化项目"><span class="nav-number">4.1.</span> <span class="nav-text">初始化项目</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-git-与远程服务通信"><span class="nav-number">5.</span> <span class="nav-text">5. git 与远程服务通信</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#git-clone"><span class="nav-number">5.1.</span> <span class="nav-text">git clone</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#git-fetch"><span class="nav-number">5.2.</span> <span class="nav-text">git fetch</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#git-push"><span class="nav-number">5.3.</span> <span class="nav-text">git push</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6-git-高阶操作"><span class="nav-number">6.</span> <span class="nav-text">6. git 高阶操作</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#fork-分支如果与主分支保持同步"><span class="nav-number">7.</span> <span class="nav-text">fork 分支如果与主分支保持同步</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#实践指南"><span class="nav-number">8.</span> <span class="nav-text">实践指南</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#日常使用-Git-整理"><span class="nav-number">8.1.</span> <span class="nav-text">日常使用 Git 整理</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#DESCRIPTION"><span class="nav-number">9.</span> <span class="nav-text">DESCRIPTION</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Individual-Developer-Standalone"><span class="nav-number">10.</span> <span class="nav-text">Individual Developer (Standalone)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Ex01-引入源码开始一个-Git-项目"><span class="nav-number">11.</span> <span class="nav-text">Ex01 引入源码开始一个 Git 项目</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Ex02-创建一个新的相关分支并进行开发"><span class="nav-number">12.</span> <span class="nav-text">Ex02 创建一个新的相关分支并进行开发</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Individual-Developer-Participant"><span class="nav-number">13.</span> <span class="nav-text">Individual Developer (Participant)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Integrator"><span class="nav-number">14.</span> <span class="nav-text">Integrator</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Repository-Administration"><span class="nav-number">15.</span> <span class="nav-text">Repository Administration</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#default-off"><span class="nav-number"></span> <span class="nav-text">default: off</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#description-The-Git-server-offers-access-to-Git-repositories"><span class="nav-number"></span> <span class="nav-text">description: The Git server offers access to Git repositories</span></a></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="xchaoinfo"
+      src="/images/xchaoinfo.jpg">
+  <p class="site-author-name" itemprop="name">xchaoinfo</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">17</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">14</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">25</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/xchaoinfo" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;xchaoinfo" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="/xchaoinfo@qq.com" title="E-Mail → xchaoinfo@qq.com"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://weibo.com/xchaoinfo" title="微博 → https:&#x2F;&#x2F;weibo.com&#x2F;xchaoinfo" rel="noopener" target="_blank"><i class="fa fa-fw fa-weibo"></i>微博</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://zhihu.com/people/xchaoinfo" title="知乎 → https:&#x2F;&#x2F;zhihu.com&#x2F;people&#x2F;xchaoinfo" rel="noopener" target="_blank"><i class="fa fa-fw fa-thumbs-up"></i>知乎</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 2016 – 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">xchaoinfo</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">35k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">31 分钟</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="//cdn.jsdelivr.net/npm/animejs@3.1.0/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/velocity-animate@1/velocity.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/velocity-animate@1/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
